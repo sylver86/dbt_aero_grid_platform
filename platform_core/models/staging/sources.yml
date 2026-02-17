@@ -1,0 +1,74 @@
+sources:
+
+  - name: external_data_raw                                                                         # Nome della sorgente - eseguendo dbt run-operation generate_base_model --args '{"source_name": "external_data_raw", "table_name": "raw_turbine_assets"}' ottengo testo descrittivo delle strutture per impostare i modelli base.
+    description: "Dati grezzi caricati su DWH da script Python vs BigQuery"
+    database: aero-grid-cert-project                                                                # Nome del Database che è il progetto Bigquery
+    schema: aero_grid_raw                                                                           # Nome dello schema che è il dataset  BigQuery
+
+
+    tables:
+
+      - name: raw_turbine_assets                                                                    # Nome della tabella fisica su Bigquery
+        description: "Dati di telemetria delle turbine eoliche"
+
+        columns:
+          - name: turbine_id
+            description: "Identificativo univoco della turbina"
+            tests:
+              - not_null
+
+          - name: model
+            description: "Modello della turbina"
+            tests:
+              - not_null
+
+          - name: location
+            description: "Locazione di dove risulta ubicata la turbina"
+
+          - name: installation_date
+            description: "Data di installazione della turbina eolica"
+
+          - name: capacity_kw
+            description: "Capacità in kw espressa della turbina eolica"
+
+
+      - name: raw_turbine_telemetry
+
+        # Impostiamo la freshness sulle rilevazioni sensoriali
+        config:
+          freshness:
+            warn_after:
+              count: 12
+              period: hour # Impostiamo un controllo di freshness ogni 12 ore (warning).
+
+            error_after:
+              count: 24
+              period: hour # Impostiamo un alert se non pervengono dati nuovi dopo 24 ore.
+
+          loaded_at_field: timestamp
+
+        columns:
+          - name: timestamp
+            description: "Momento della rilevazione del sensore"
+
+          - name: turbine_id
+            description: "Identificativo univoco della turbina cui è stata fatta la rilevazione sensoriale"
+
+          - name: wind_speed_ms
+            description: "Rilevazione della velocità del vento"
+
+          - name: rpm
+            description: "Rilevazione degli rpm della turbina eolica"
+
+          - name: power_output_kw_
+            description: "Rilevazione della potenza in kw della turbina eolica"
+
+          - name: temperature_c
+            description: "Rilevazione della temperatura della turbina eolica"
+
+          - name: vibration_index
+            description: "Indice di vibrazione rilevato"
+
+
+
+

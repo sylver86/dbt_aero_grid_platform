@@ -1,0 +1,7 @@
+connection_raw:
+  project_id: "aero-grid-cert-project"
+  dataset_id: aero_grid_raw
+  metadata_table: raw_turbine_assets
+  telemetry_table: raw_turbine_telemetry
+output:
+  folder: "raw_data"

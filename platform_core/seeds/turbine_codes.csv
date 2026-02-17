@@ -1,0 +1,9 @@
+code,severity,description,action_required
+E-000,Info,Sistema Operativo Normale,Nessuna azione
+E-101,Low,Velocità vento insufficiente per avvio,Monitoraggio passivo
+E-102,Low,Modalità Test/Calibrazione,Contattare centro controllo
+W-201,Medium,Vibrazione sopra soglia standard,Ispezione visiva programmata
+W-205,Medium,Temperatura riduttore alta,Verifica livello olio
+C-503,Critical,Vibrazione Critica (Z-Score > 3),Arresto immediato automatico
+C-509,Critical,Surriscaldamento Generatore,Arresto di emergenza
+M-900,Info,Manutenzione Programmata,Esclusione da calcolo KPI

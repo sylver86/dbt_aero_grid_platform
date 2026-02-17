@@ -1,0 +1,21 @@
+# Configurazione simulazione AeroGrid
+simulation:
+  seed: 42
+  num_turbines: 15
+  interval_minutes: [10, 30]                                                                        # Intervalli possibili per le rilevazioni
+  num_measurements: 1000
+
+business_rules:
+  wind_cut_in_speed: 3.0
+  temp_range: [20.0, 60.0]
+  vibration_range: [0.1, 5.0]
+  capacity_range: [2000, 5000]
+
+
+data_quality:
+  null_records: 18
+  outlier_records: 50
+  duplicate_rows: 15
+
+output:
+  folder: "raw_data"

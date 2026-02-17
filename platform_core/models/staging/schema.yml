@@ -1,0 +1,125 @@
+version: 2
+
+models:
+  - name: stg_turbine_assets
+    description: "Tabella staging che costituisce l'anagrafica e l'asset delle turbine eolice"
+    columns:
+      - name: turbine_key
+        data_type: string
+        description: "Chiave surrogata della turbina"
+        tests:
+          - unique
+          - not null
+
+      - name: turbine_id
+        data_type: string
+        description: "Chiave identificativa della turbina"
+        tests:
+          - not null
+
+      - name: model
+        data_type: string
+        description: "Modello della turbina"
+        tests:
+          - not null
+
+      - name: location
+        data_type: string
+        description: "Ubicazione della turbina"
+        tests:
+          - not null
+
+      - name: installation_date
+        data_type: date
+        description: "Data di installazione della turbina"
+        tests:
+          - not null
+
+      - name: capacity_kw
+        data_type: int64
+        description: "Capacità kw della turbina"
+        tests:
+          - not null
+
+
+
+#---------------------------------------------------------------------------------------------------
+
+
+  - name: stg_turbine_telemetry
+    description: "Monitoraggio sensoriale della turbina"
+    columns:
+      - name: telemetry_key
+        data_type: string
+        description: "Chiave surrogata della telemetria"
+        tests:
+          - not null
+          - unique
+
+      - name: measurement_at
+        data_type: timestamp
+        description: "Momento della rilevazione sensoriale"
+        tests:
+          - not null
+
+      - name: turbine_id
+        data_type: string
+        description: "Identificativo della turbina"
+        tests:
+          - not null
+          - relationships:
+              to: ref('stg_turbine_assets') # La tabella di riferimento
+              field: turbine_id               # La chiave primaria della tabella di riferimento
+
+
+
+      - name: wind_speed_ms
+        data_type: float64
+        description: "Velocità percepita del vento"
+        tests:
+          - not null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 50
+              inclusive: true
+
+      - name: rpm
+        data_type: float64
+        description: "RPM"
+        tests:
+          - not null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 500
+              inclusive: true
+
+
+      - name: power_output_kw
+        data_type: float64
+        description: "Potenza erogata in kw"
+        tests:
+          - not null
+          - dbt_utils.accepted_range:
+                min_value: 0
+                max_value: 4000
+                inclusive: true
+
+      - name: temperature_c
+        data_type: float64
+        description: "Temperatura rilevata"
+        tests:
+          - not null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 120
+              inclusive: true
+
+      - name: vibration_index
+        data_type: float64
+        description: "Vibrazione rilevata"
+        tests:
+          - not null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 5
+              inclusive: true

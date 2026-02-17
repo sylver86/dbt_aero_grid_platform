@@ -1,0 +1,16 @@
+turbine_id,model,location,installation_date,capacity_kw
+T-006,V112-3.3,North-Sea-Offshore,2020-01-11 09:00:00,3003
+T-003,SG-132-3.4,Puglia-Foggia-North,2020-01-31 09:00:00,1478
+T-012,GE-Haliade-X,Puglia-Foggia-North,2020-01-31 09:00:00,3499
+T-014,V112-3.3,Sicilia-Enna-West,2020-01-11 09:00:00,2556
+T-010,V150-4.2,Sardegna-Oristano,2020-01-31 09:00:00,775
+T-007,SG-132-3.4,Sardegna-Oristano,2020-01-31 09:00:00,34
+T-012,V150-4.2,Puglia-Foggia-North,2020-01-31 09:00:00,2253
+T-004,SG-132-3.4,Sardegna-Oristano,2020-01-31 09:00:00,3152
+T-006,V112-3.3,Sardegna-Oristano,2020-01-11 09:00:00,1955
+T-009,SG-170-15,North-Sea-Offshore,2020-01-31 09:00:00,1585
+T-002,SG-132-3.4,Puglia-Foggia-North,2020-01-11 09:00:00,3459
+T-006,V150-4.2,Toscana-Piombino,2020-01-31 09:00:00,3073
+T-010,V112-3.3,Puglia-Foggia-North,2020-01-31 09:00:00,1021
+T-010,SG-132-3.4,Toscana-Piombino,2020-01-31 09:00:00,3461
+T-007,SG-170-15,North-Sea-Offshore,2020-01-11 09:00:00,2613
