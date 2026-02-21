@@ -54,4 +54,8 @@ seeds:                                                                          
 
 snapshots:
   platform_core:                                                                                    # Il nome del progetto dbt
-    +target_schema: aero_grid_snapshots                                                             # Lo schema finale su DBot
+    +target_schema: aero_grid_snapshots                                                             # Lo schema finale 
+
+
+vars:
+  telemetry_start_date: 7                                                                           # Variabile che imposta di considerare solo le ultime 7 rilevazioni

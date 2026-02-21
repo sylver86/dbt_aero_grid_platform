@@ -68,17 +68,18 @@ models:
         tests:
           - not null
           - relationships:
-              to: ref('stg_turbine_assets') # La tabella di riferimento
-              field: turbine_id               # La chiave primaria della tabella di riferimento
-
-
+              arguments:
+                to: ref('stg_turbine_assets')                                                         # La tabella di riferimento
+                field: turbine_id                                                                     # La chiave primaria della tabella di riferimento
+                                                                                                    # Definisco un vincolo di Integrità Referenziale (molto simile a una Foreign Key nei database relazionali), ma con una differenza fondamentale: dbt non blocca l'inserimento dei dati, bensì testa se la relazione è rispettata dopo che i dati sono stati caricati.
+                                                                                                    # IN PRATICA TUTTI I VALORI DI 'turbine_id' devono essere tra quelli definiti in 'turbine_id' della tabella "stg_turbine_assets"
 
       - name: wind_speed_ms
         data_type: float64
         description: "Velocità percepita del vento"
         tests:
           - not null
-          - dbt_utils.accepted_range:
+          - dbt_utils.accepted_range:                                                               # Definiamo un range di valori plausibili per il campo
               min_value: 0
               max_value: 50
               inclusive: true

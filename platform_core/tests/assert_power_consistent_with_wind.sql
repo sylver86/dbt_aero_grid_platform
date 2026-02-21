@@ -3,6 +3,7 @@
    Regola: Una turbina non può produrre energia (power_output_kw > 0) se il vento
            è sotto la soglia di "cut-in" (es. meno di 2 m/s).
            Se succede, c'è un errore nel sensore o nei dati.
+   Questo test si esegue al lancio di dbt test, dbt lo esegue automaticamente.
 */
 
 Select

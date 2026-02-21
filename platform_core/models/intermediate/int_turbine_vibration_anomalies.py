@@ -1,5 +1,18 @@
 import pandas as pd
 
+# Modello intermediate creato come gli altri modelli SQL ma con codice Python.
+# Dbt Aggancia questo modello nella DAG come tutti gli altri ma sfrutta la potenza di calcolo di python.
+# Viene quindi creato come tutti nella esecuzione di dbt run, build.
+
+# Il codice esegue un'analisi chiamata Z-Score Outlier Detection
+# Calcoliamo la media e la deviazione standard per ogni turbina
+# Dopo applichiamo la formula di z-score :
+
+        # Valore 0 vuol dire che il dato del "power_output_mw" è nella media e rientra nella normalità
+        # Valore = 3 vuol dire che il valore di "power_output_mw" è lontano dalla normalità
+
+
+
 def model(dbt, session):
     # Configurazione
     dbt.config(materialized="table")

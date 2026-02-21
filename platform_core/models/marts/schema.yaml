@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: fct_turbine_telemetry
+    description: "Tabella dei fatti certificata per la telemetria delle turbine. Contiene calcoli di performance teorica."
+    config:
+      contract:
+        enforced: true                                                                              # <--- PER LA DEFINIZIONE DEL DATA MESH: Il Contratto è Attivo - i campi sono blindati
+    columns:
+      - name: telemetry_key
+        data_type: string
+        tests:
+          - unique
+          - not_null
+      - name: turbine_id
+        data_type: string
+      - name: measurement_at
+        data_type: timestamp
+      - name: wind_speed_ms
+        data_type: float64
+      - name: power_output_kw
+        data_type: float64
+      - name: theoretical_power_kw
+        data_type: float64
+      - name: power_output_mw
+        data_type: float64
+      - name: theoretical_power_mw
+        data_type: float64

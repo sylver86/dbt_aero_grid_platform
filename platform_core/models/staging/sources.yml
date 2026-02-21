@@ -2,8 +2,8 @@ sources:
 
   - name: external_data_raw                                                                         # Nome della sorgente - eseguendo dbt run-operation generate_base_model --args '{"source_name": "external_data_raw", "table_name": "raw_turbine_assets"}' ottengo testo descrittivo delle strutture per impostare i modelli base.
     description: "Dati grezzi caricati su DWH da script Python vs BigQuery"
-    database: aero-grid-cert-project                                                                # Nome del Database che è il progetto Bigquery
-    schema: aero_grid_raw                                                                           # Nome dello schema che è il dataset  BigQuery
+    database: aero-grid-cert-project                                                                # Nome "Database che è il progetto Bigquery
+    schema: aero_grid_raw                                                                           # Nome "Schema"  che è il dataset  BigQuery
 
 
     tables:
