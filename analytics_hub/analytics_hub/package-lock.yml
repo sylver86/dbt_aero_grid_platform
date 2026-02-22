@@ -1,0 +1,12 @@
+packages:
+  - name: codegen
+    package: dbt-labs/codegen
+    version: 0.14.0
+  - git: https://github.com/sylver86/dbt_aero_grid_platform_core.git
+    name: platform_core
+    revision: 6e029a7f53d173b015db544d1a4e47678ddbafae
+    subdirectory: platform_core
+  - name: dbt_utils
+    package: dbt-labs/dbt_utils
+    version: 1.3.3
+sha1_hash: 88d0213cfeb030c372b0d4f04db0a7ff7b91f20a
