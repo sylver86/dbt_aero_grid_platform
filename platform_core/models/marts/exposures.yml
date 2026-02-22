@@ -1,0 +1,14 @@
+version: 2
+
+exposures:
+  - name: executive_wind_farm_monitor                                                               # Nome identificativo della exposure
+    type: dashboard                                                                                 # Natura dell'asset esterno per categorizzarli visivamente (dashboard, notebook, analysis, ml, application)
+    maturity: high                                                                                  # Indica l'affidabilità e lo stato di produzione dell'asset (high certificati per i dirigenti, medium uso dipartimentale, low in fase di test)
+    url: https://powerbi.com/aerogrid/exec-monitor                                                  # Esempio di link della app dashboard che sfrutta i dati - usato nel sito di documentazione di dbt che rimanda ad app
+    description: "Dashboard direzionale per il monitoraggio della potenza teorica vs reale."        # Descrizione obiettivo della dashboard (supporterebbe il formato md)
+    depends_on:                                                                                     # Elenco dei modelli che fanno parte della exposures
+      - ref('fct_turbine_telemetry')
+      - ref('int_turbine_vibration_anomalies') # Se la dashboard usa anche il modello Python
+    owner:
+      name: "Eugenio Pasqua"                                                                        # Nome del responsabile (Data Steward o analista) dell'asset dati con nome ed email
+      email: "eugenix86@gmail.com"

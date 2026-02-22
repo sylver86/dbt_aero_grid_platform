@@ -30,11 +30,11 @@ renamed as (
     /* Usiamo dbt.dateadd cosi universalmente utilizziamo un linguaggio SQL per ogni ambiente  */
     /* In sostanza il secondo elemento è calcolato "sottraendo" perchè abbiamo inserito il - calcolo di interval e quindi dando riferimento al timestamp corrente  i 7 giorni  */
     /* telemetry_start_date -> Variabile progetto: Carico gli ultimi 'n' giorni  rispetto al giorno corrente*/
-    timestamp >= {{ dbt.dateadd(
+    timestamp >= cast({{ dbt.dateadd(
         datepart="day",
         interval=-var("telemetry_start_date"),
         from_date_or_timestamp="current_timestamp()"
-    ) }}
+    ) }} as TIMESTAMP)
 ),
 
 -- 2. Poi applichiamo logiche extra e chiavi univoche

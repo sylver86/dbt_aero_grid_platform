@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: int_turbine_performance_check
+    description: "Modello intermedio per il calcolo della potenza teorica. Materializzazione: Ephemeral."
+    columns:
+      - name: theoretical_power_kw
+        description: "Potenza calcolata tramite macro fisica. Deve essere sempre >= 0."
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: turbine_id
+        tests:
+          - relationships: # Test di integrità referenziale
+              to: ref('stg_turbine_assets')
+              field: turbine_id

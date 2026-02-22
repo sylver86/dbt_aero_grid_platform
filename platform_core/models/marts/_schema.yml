@@ -20,9 +20,8 @@ models:
         data_type: float64
       - name: power_output_kw
         data_type: float64
-      - name: theoretical_power_kw
-        data_type: float64
       - name: power_output_mw
         data_type: float64
       - name: theoretical_power_mw
         data_type: float64
+        description: '{{ doc("wind_power_logic") }}'
