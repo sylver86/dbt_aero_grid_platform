@@ -1,5 +1,14 @@
-
+ 
 # 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/dbt--core-1.8+-orange?logo=dbt&logoColor=white" alt="dbt" />
+  <img src="https://img.shields.io/badge/GCP_BigQuery-Cloud--DWH-blue?logo=googlecloud&logoColor=white" alt="Google Cloud Platform" />
+  <img src="https://img.shields.io/badge/FinOps-cost--efficient-success?logo=moneygram&logoColor=white" alt="FinOps" />
+  <img src="https://img.shields.io/badge/dbt--evaluator-validated-brightgreen?logo=checkmarx&logoColor=white" alt="dbt project evaluator" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
+</p>
 
 **AeroGrid Platform** è un'infrastruttura dati Enterprise end-to-end progettata per l'ingestion, l'elaborazione e l'analisi avanzata di dati telemetrici IoT provenienti da una flotta di turbine eoliche. 
 
@@ -8,7 +17,7 @@ Sviluppato per simulare scenari reali ad alta intensità di dati (tipici del set
 ---
 
 ## 🎯 Executive Summary & Valore di Business
-Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati moderna per scenari ad alta intensità, posizionandosi come soluzione "Enterprise-Ready". L'architettura implementa le più avanzate best practice e gli standard ufficiali dbt Labs, strutturandosi su 4 pilastri strategici:
+Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati moderna per scenari ad alta intensità, posizionandosi come una soluzione "Enterprise-Ready". L'architettura implementa le best practice e gli standard ufficiali dbt Labs, strutturandosi su 4 pilastri strategici:
 
 ### 🏛️ 1. Architettura e Governance
 * **Data Mesh & Domain-Driven Design (Multi-Project):** Suddivisione in due progetti dbt distinti e interdipendenti per evitare colli di bottiglia organizzativi. `platform_core` (Producer) è gestito dal team Data Engineering per le trasformazioni core; `analytics_hub` (Consumer) è dedicato alla BI. Una macro custom forza l'ambiente consumer a interrogare sempre la produzione reale, garantendo il disaccoppiamento senza duplicazione dei dati.
@@ -49,7 +58,7 @@ Questo repository è stato sviluppato seguendo rigorosamente gli standard uffici
 * 🐍 **Polyglot Data Transformation (dbt-Python):** I calcoli procedurali complessi (come lo Z-Score per la rilevazione delle anomalie vibrazionali) non sono forzati in SQL, ma eseguiti nativamente nel DWH sfruttando modelli Python integrati nel DAG (via Dataproc Serverless).
 * ⚙️ **Slim CI & Deferral:** Predisposizione per l'automazione DevOps tramite i flag `--state` e `--defer`, processando in CI solo il codice alterato durante le Pull Request, importando i nodi genitore direttamente dalla produzione.
 * 📏 **Semantic Layer (MetricFlow):** Astrazione delle logiche aggregative dal codice SQL fisico. Metriche complesse (es. potenze medie e ratio) sono definite in YAML (`turbine_metrics.yml`), garantendo una singola "Source of Truth" per l'azienda.
-* 🧪 **Advanced Data Quality (Data Physics):** Oltre ai test relazionali e ai bound parametrici (`dbt_utils.accepted_range`), il progetto include test SQL singolari per validare veri e propri principi fisici (es. impossibilità di produrre energia in assenza di vento).
+* 🧪 **Advanced Data Quality (Data Physics):** Oltre ai test relazionali e ai bound parametrici (`dbt_utils.accepted_range`), il progetto include test SQL singolari per validare veri e propri principi fisici (es. impossibilità di generare energia in assenza di vento).
 
 ---
 
@@ -124,6 +133,11 @@ dbt run
 
 ---
 
+## 📖 Documentazione Architetturale Completa
+
+Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di metaprogrammazione Jinja, la FinOps e le configurazioni del Data Mesh, consultare il Manuale Architetturale allegato al progetto:
+
+👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)**
 *Progettato e sviluppato da Eugenio Pasqua.*
 
 ---
@@ -133,6 +147,15 @@ dbt run
 # 🇬🇧 ENGLISH VERSION
 
 # 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
+
+<p align="center">
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/Python-3.9+-blue?logo=python%26logoColor=white" alt="Python" />
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/dbt--core-1.8+-orange?logo=dbt%26logoColor=white" alt="dbt" />
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/GCP_BigQuery-Cloud--DWH-blue?logo=googlecloud%26logoColor=white" alt="Google Cloud Platform" />
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/FinOps-cost--efficient-success?logo=moneygram%26logoColor=white" alt="FinOps" />
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/dbt--evaluator-validated-brightgreen?logo=checkmarx%26logoColor=white" alt="dbt project evaluator" />
+<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
+</p>
 
 **AeroGrid Platform** is an end-to-end Enterprise data infrastructure designed for the ingestion, processing, and advanced analysis of IoT telemetry data coming from a fleet of wind turbines.
 
@@ -264,6 +287,13 @@ dbt run
 
 ---
 
+## 📖 Complete Architectural Documentation
+
+For an in-depth technical dive into all architectural choices, Jinja metaprogramming logic, FinOps, and Data Mesh configurations, please refer to the Architectural Playbook attached to the project:
+
+👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)**
 *Designed and developed by Eugenio Pasqua.*
 
+```
 
+```
