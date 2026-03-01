@@ -669,11 +669,121 @@ classDiagram
     note for BigQueryIngestor "Type Safety:\n• Metadata: autodetect\n• Telemetry: explicit schema\n  (TIMESTAMP, STRING, FLOAT64)"
 
 ```
-<br><br>
-* **Producer Domain (`platform_core`):** dbt Core project dedicated to pure Data Engineering. Maps sources, sanitizes data, historizes master data (SCD2), and applies complex physical-mathematical models.
-* **Consumer Domain (`analytics_hub`):** dbt Core project for Business Intelligence. Imports data from the core layer via Cross-Project References typical of Data Mesh logic, ignoring dev environments and pointing directly to production.
+ 
+ <br><br>
+
+* **⚙️ Producer Domain (`platform_core`):** The data engineering core of AeroGrid. This dbt project is the Producer Domain responsible for the entire data lifecycle: from raw source acquisition to the production of certified and governed Data Products. The following graph shows the complete transformation pipeline orchestrated by dbt, from BigQuery sources to the assets exposed to BI.
+
+```mermaid
+graph TD
+    %% ── Sources ──
+    SRC_TEL[("🗄️ SOURCE<br/>raw_turbine_telemetry<br/><i>Freshness: warn 12h · error 24h</i>")]
+    SRC_ASS[("🗄️ SOURCE<br/>raw_turbine_assets")]
+
+    %% ── Seeds ──
+    SEED["🌱 SEED<br/>turbine_codes.csv<br/>→ stg_lookup_turbine_error_code"]
+
+    %% ── Staging ──
+    STG_TEL["📋 stg_turbine_telemetry<br/><b>incremental · merge</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>• Surrogate key MD5<br/>• CAST · TRIM · NULL sentinel<br/>• Lookback filter (7 days)<br/>• Deduplication DISTINCT"]
+    STG_ASS["📋 stg_turbine_assets<br/><b>view</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>• Surrogate key MD5<br/>• CAST · capacity 0→NULL<br/>• Deduplication DISTINCT"]
+
+    %% ── Intermediate ──
+    INT_PERF["⚡ int_turbine_performance_check<br/><b>ephemeral</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Macro: elab_power_theoretical()<br/>P = 0.5 × wind³"]
+    INT_PIVOT["📊 int_turbine_range_pivot<br/><b>view</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Jinja FOR loop<br/>Thresholds: 100·500·1000·2000 kW"]
+    INT_ZSCORE["🐍 int_turbine_vibration_anomalies<br/><b>table · Python / Dataproc</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Z-Score = (val − μ) / σ<br/>Anomaly: |Z| > 3"]
+
+    %% ── Marts ──
+    FCT["🏆 fct_turbine_telemetry<br/><b>incremental · merge</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>• kW → MW conversion macro<br/>• Partition: DAY(measurement_at)<br/>• Cluster: turbine_id<br/>• Data Contract: enforced ✅<br/>• on_schema_change: fail"]
+
+    %% ── Snapshots ──
+    SNAP["📸 snp_turbine_assets<br/><b>snapshot · check</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>SCD Type 2<br/>check: capacity_kw · location · model"]
+
+    %% ── Tests ──
+    TEST["🧪 assert_power_consistent_with_wind<br/><b>singular test</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Rule 1: wind < 2 m/s → power = 0<br/>Rule 2: power ≤ capacity_kw"]
+
+    %% ── Exposures ──
+    EXPO["📈 EXPOSURE<br/>executive_wind_farm_monitor<br/>━━━━━━━━━━━━━━━━━━━━<br/>Type: PowerBI Dashboard<br/>Maturity: HIGH<br/>Owner: Eugenio Pasqua"]
+
+    %% ── Connections ──
+    SRC_TEL --> STG_TEL
+    SRC_ASS --> STG_ASS
+    SRC_ASS --> SNAP
+    SEED -.-> STG_TEL
+
+    STG_TEL --> INT_PERF
+    STG_ASS -.->|"referential integrity"| STG_TEL
+
+    INT_PERF --> FCT
+    INT_PERF --> INT_PIVOT
+    FCT --> INT_ZSCORE
+
+    STG_TEL --> TEST
+    STG_ASS --> TEST
+
+    FCT --> EXPO
+    INT_ZSCORE --> EXPO
+
+    %% ── Styles ──
+    style SRC_TEL fill:#ff922b,color:#fff
+    style SRC_ASS fill:#ff922b,color:#fff
+    style SEED fill:#a9e34b,color:#333
+    style STG_TEL fill:#868e96,color:#fff
+    style STG_ASS fill:#868e96,color:#fff
+    style INT_PERF fill:#be4bdb,color:#fff
+    style INT_PIVOT fill:#be4bdb,color:#fff
+    style INT_ZSCORE fill:#9b59b6,color:#fff
+    style FCT fill:#2ecc71,color:#fff
+    style SNAP fill:#3498db,color:#fff
+    style TEST fill:#e74c3c,color:#fff
+    style EXPO fill:#f1c40f,color:#333
+```
 
  
+<br><br>
+Below is the core project structure:<br>
+
+```text
+platform_core/
+├── macros/
+│   ├── calculate_theoretical_power.sql    # UDF: P = 0.5 × v³
+│   ├── conversion_utils.sql               # kW → MW conversion
+│   └── generate_schema_name.sql           # Dynamic schema routing
+├── models/
+│   ├── staging/
+│   │   ├── _sources.yml                   # Source definitions + freshness SLA
+│   │   ├── _schema.yml                    # Column tests & docs
+│   │   ├── stg_turbine_telemetry.sql      # Incremental + dedup + lookback
+│   │   └── stg_turbine_assets.sql         # View + surrogate key
+│   ├── intermediate/
+│   │   ├── _schema.yml                    # Referential integrity + range tests
+│   │   ├── int_turbine_performance_check.sql   # Ephemeral: theoretical power
+│   │   ├── int_turbine_range_pivot.sql         # Jinja dynamic pivot
+│   │   └── int_turbine_vibration_anomalies.py  # Python: Z-Score detection
+│   ├── marts/
+│   │   ├── _schema.yml                    # Data Contract (enforced: true)
+│   │   ├── fct_turbine_telemetry.sql      # Incremental MERGE + partition
+│   │   ├── exposures.yml                  # PowerBI dashboard mapping
+│   │   └── docs/
+│   │       └── doc_business_logic.md      # Wind power formula docs
+│   └── semantic/                          # MetricFlow definitions
+├── seeds/
+│   └── turbine_codes.csv                  # Error code lookup table
+├── snapshots/
+│   └── snp_turbine_assets.sql             # SCD Type 2
+├── tests/
+│   └── staging/
+│       └── assert_power_consistent_with_wind.sql  # Physics validation
+├── dbt_project.yml
+└── packages.yml
+```
+
+ 
+  
+<br><br>
+
+* **📊 Analytics Hub — Consumer Domain (`analytics_hub`):** The Business Intelligence layer of AeroGrid. This dbt project is the Consumer Domain that imports certified Data Products from the Producer (`platform_core`) and transforms them into views ready for dashboards, reports, and ad-hoc analysis. Following **Data Mesh** principles, this project does not own or transform raw data: it exclusively consumes the governed Marts from the Producer via Cross-Project References, forced to always read from actual production. The Consumer never has visibility into the Producer's internal layers. If the Data Engineering team modifies staging or intermediate logic, the Consumer is not impacted as long as the Mart contract remains valid. This is the **decoupling** guaranteed by the Data Mesh pattern.
+
+ > ⚠️ **Prerequisite:** The `platform_core` project must have been executed at least once in production for the Cross-Project References to find the target tables.
 
 <br><br>
 
