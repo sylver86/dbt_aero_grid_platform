@@ -124,11 +124,6 @@ dbt run
 
 ---
 
-## 📖 Documentazione Architetturale Completa
-
-Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di metaprogrammazione Jinja, la FinOps e le configurazioni del Data Mesh, consultare il Manuale Architetturale allegato al progetto:
-
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)**
 *Progettato e sviluppato da Eugenio Pasqua.*
 
 ---
