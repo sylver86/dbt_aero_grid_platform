@@ -260,7 +260,7 @@ platform_core/
 
 ## <p align="center"> 🏗️ High-Level Focus Architecture </p>
 
-L'architettura end-to-end segue un flusso lineare dai sensori SCADA (Supervisory Control And Data Acquisition) fino alla BI. I dati grezzi vengono generati e caricati su BigQuery dal modulo Python, attraversano i tre layer dbt del Producer Domain (Staging → Intermediate → Marts), e raggiungono il Consumer Domain che li espone a PowerBI, modelli predittivi e notebook di analisi. Ogni macro-modulo è fisicamente separato per consentire pipeline CI/CD indipendenti.
+Osservando per intero l'intera architettura end-to-end con tutti i suoi moduli, esso segue un flusso lineare dai sensori SCADA (Supervisory Control And Data Acquisition) fino alla BI. I dati grezzi vengono generati e caricati su BigQuery dal modulo Python, attraversano i tre layer dbt del Producer Domain (Staging → Intermediate → Marts), e raggiungono il Consumer Domain che li espone a PowerBI, modelli predittivi e notebook di analisi. Ogni macro-modulo è fisicamente separato per consentire pipeline CI/CD indipendenti.
 <br><br>
 
 ```mermaid
@@ -326,7 +326,7 @@ graph TB
 
 ## <p align="center">  🥇 Medallion Architecture — Layer Detail </p>
 
-I dati attraversano tre layer progressivi di raffinamento. Il Bronze (Raw Landing Zone) contiene i dati grezzi e non tipizzati così come arrivano dai sensori. Il Silver (Staging) applica hashing, deduplicazione, type casting e filtri di plausibilità. Il Gold (Intermediate + Marts) calcola la potenza teorica tramite macro fisiche, esegue l'anomaly detection in Python e produce la fact table certificata con Data Contract, partizionamento e clustering ottimizzati per BigQuery.
+Dal punto di vista strutturale, di seguito mostriamo che i dati attraversano tre layer progressivi di raffinamento. Il Bronze (Raw Landing Zone) contiene i dati grezzi e non tipizzati così come arrivano dai sensori. Il Silver (Staging) applica hashing, deduplicazione, type casting e filtri di plausibilità. Il Gold (Intermediate + Marts) calcola la potenza teorica tramite macro fisiche, esegue l'anomaly detection in Python e produce la fact table certificata con Data Contract, partizionamento e clustering ottimizzati per BigQuery.
 
 <br><br>
 
@@ -377,7 +377,7 @@ graph TB
 
 ## <p align="center">  🔀 Data Mesh & Governance — Multi-Project Topology </p>
 
-La separazione Producer/Consumer implementa i principi del Data Mesh. Il progetto platform_core possiede e governa i dati end-to-end fino al Mart certificato, blindato da Data Contract e Model Versioning. Il progetto analytics_hub consuma i dati esclusivamente via Cross-Project Reference, forzato a leggere sempre dalla produzione reale. L'ownership è tracciata tramite Exposures che collegano i modelli dbt agli asset applicativi esterni come le dashboard PowerBI.
+Per la Governance dei dati la separazione Producer/Consumer implementa i principi del Data Mesh. Il progetto platform_core possiede e governa i dati end-to-end fino al Mart certificato, blindato da Data Contract e Model Versioning. Il progetto analytics_hub consuma i dati esclusivamente via Cross-Project Reference, forzato a leggere sempre dalla produzione reale. L'ownership è tracciata tramite Exposures che collegano i modelli dbt agli asset applicativi esterni come le dashboard PowerBI.
 
 <br><br>
 
