@@ -14,6 +14,8 @@
 
 Sviluppato per simulare scenari reali ad alta intensità di dati (tipici del settore Energy/Aerospace), il progetto trasforma terabyte di rilevazioni grezze e non strutturate in Data Products certificati, pronti per la Business Intelligence e algoritmi di Predictive Maintenance.
 
+
+
 ---
 
 ## 🎯 Executive Summary & Valore di Business
@@ -42,10 +44,112 @@ Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati modern
 
 ---
 
+## 🧰 Technology Stack Summary
+
+```mermaid
+mindmap
+    root((AeroGrid<br/>Platform))
+        Cloud
+            Google Cloud Platform
+            BigQuery (DWH)
+            Dataproc Serverless
+        Transformation
+            dbt Core 1.8+
+            dbt-bigquery plugin
+            dbt_utils
+            codegen
+        Languages
+            SQL (T-SQL compatible)
+            Python 3.9+
+            Jinja2 Templating
+            YAML Configuration
+        Python Libraries
+            pandas
+            numpy
+            polars
+            PyYAML
+            google-cloud-bigquery
+        Data Patterns
+            Medallion Architecture
+            Data Mesh (Multi-Project)
+            SCD Type 2 (Snapshots)
+            Incremental MERGE
+            Surrogate Keys (MD5)
+        Quality
+            Data Contracts
+            Source Freshness SLA
+            3-Tier Testing
+            Singular Physics Tests
+        Analytics
+            Semantic Layer / MetricFlow
+            Z-Score Anomaly Detection
+            Predictive Maintenance
+        BI & Exposure
+            PowerBI
+            Lineage & Impact Analysis
+            Data Steward Ownership
+        DevOps
+            Slim CI (state:modified)
+            Deferral (--defer)
+            YAML-Driven Config
+
+```
+
+---
+
 ## 🏗️ Architettura e Stack Tecnologico
 L'architettura si divide in tre macro-moduli, separati fisicamente per supportare pipeline CI/CD indipendenti:
 
 * **Python Data Ingestion (`data_ops_ingestion`):** Modulo ad oggetti per la simulazione e l'ingestion dei dati sensoriali. Implementa logiche di Strict Type Safety verso BigQuery e inietta volontariamente anomalie (valori nulli, outlier termici) per testare la resilienza della pipeline a valle.
+
+```mermaid
+
+classDiagram
+    class TurbineDataGenerator {
+        -config: dict
+        -logger: Logger
+        -folder_script: Path
+        -folder_project: Path
+        -num_turbine: int
+        -turbine_id_value: list
+        +__init__(config_path: str)
+        +generate_metadata() → DataFrame
+        +generate_telemetry() → DataFrame
+        +run() → None
+    }
+
+    class BigQueryIngestor {
+        -config: dict
+        -logger: Logger
+        -folder_project: Path
+        -path_to_json: Path
+        -client: bigquery.Client
+        +__init__(config_path_yaml: str)
+        +get_datasets() → list
+        +create_dataset_if_not_exists(dataset_id, location)
+        +load_table(file_path, table_name, autodetect, schema)
+        -_get_telemetry_schema() → list[SchemaField]
+        +run() → None
+    }
+
+    class SectionFilter {
+        +filter(record) → bool
+    }
+
+    class setup_logging {
+        <<function>>
+        +setup_logging() → None
+    }
+
+    TurbineDataGenerator ..> setup_logging : uses
+    BigQueryIngestor ..> setup_logging : uses
+    BigQueryIngestor ..> TurbineDataGenerator : reads output CSVs
+
+    note for TurbineDataGenerator "Anomaly Injection:\n• 18 NULL records\n• 50 Outliers (temp=550°C, rpm=-999)\n• 15 Duplicate rows"
+    note for BigQueryIngestor "Type Safety:\n• Metadata: autodetect\n• Telemetry: explicit schema\n  (TIMESTAMP, STRING, FLOAT64)"
+
+```
+
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
@@ -325,158 +429,8 @@ dbt run
 
 ---
 
-## 📖 Documentazione Architetturale Completa
-
-Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di metaprogrammazione Jinja, la FinOps e le configurazioni del Data Mesh, consultare il Manuale Architetturale allegato al progetto:
-
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br><br>
 *Progettato e sviluppato da Eugenio Pasqua.*
 
----
 
 ---
-
-# 🇬🇧 ENGLISH VERSION
-
-# 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
-
- 
-
-**AeroGrid Platform** is an end-to-end Enterprise data infrastructure designed for the ingestion, processing, and advanced analysis of IoT telemetry data coming from a fleet of wind turbines.
-
-Developed to simulate data-intensive, real-world scenarios (typical of the Energy/Aerospace sectors), the project transforms terabytes of raw, unstructured sensor readings into certified Data Products, ready for Business Intelligence and Predictive Maintenance algorithms.
-
----
-
-## 🎯 Executive Summary & Business Value
-
-This project tackles and resolves the critical challenges of modern data engineering for high-intensity scenarios, positioning itself as an "Enterprise-Ready" solution for industry leaders. The architecture implements the most advanced global best practices and official dbt Labs standards, structured around 4 strategic pillars:
-
-### 🏛️ 1. Architecture & Governance
-
-* **Data Mesh & Domain-Driven Design (Multi-Project):** Divided into two distinct and interdependent dbt projects to avoid organizational bottlenecks. `platform_core` (Producer) is managed by the Data Engineering team for core transformations; `analytics_hub` (Consumer) is dedicated to BI. A custom macro forces the consumer environment to always query the actual production data, ensuring decoupling without data duplication.
-* **Medallion Architecture & Time Spine:** Rigorously structured into Staging (normalization), Intermediate (business logic), and Marts (Gold Layer) layers. It includes the implementation of an unbroken Time Spine (2020-2030), vital for handling typical IoT transmission "gaps" and supporting flawless time-based aggregations.
-
-### 🛡️ 2. Resilience & Industrial Data Quality
-
-* **Late Arriving Data Management (Self-Healing):** Automatic handling of IoT network delays via UPSERT patterns. Incremental models leverage the merge strategy and MD5 Hash keys (surrogate keys) to append new packets and overwrite any retransmissions, eliminating the risk of duplicates.
-* **Data Contracts & Model Versioning:** The primary data product is secured by strict Data Contracts (`enforced: true`) that prevent destructive schema modifications. Evolutions are managed via native Model Versioning, keeping older versions operational (with a `deprecation_date`) to guarantee zero-downtime migrations for downstream teams.
-* **3-Tier Quality Assurance & Data Physics:** Beyond relational tests and parametric bounds, the project implements SQL Singular Tests that validate actual physical industrial laws (e.g., the impossibility of generating power with zero wind), immediately isolating hardware anomalies missed by sensors.
-* **Source Freshness & SLA Monitoring:** Strict checks on raw sources to monitor latency. In the wind energy sector, intercepting over 24h of missing transmissions turns the data pipeline into an early operational warning system against SCADA gateway failures.
-
-### 💡 3. Advanced Analytics & Abstraction
-
-* **Polyglot Transformation (dbt-Python for Predictive Maintenance):** Complex procedural statistical calculations are not forced into SQL. The project natively executes Python models (pandas via Dataproc) within the DWH to detect vibrational anomalies using Z-Scores, delivering data ready for predictive maintenance interventions.
-* **Semantic Layer & MetricFlow:** Total abstraction of business logic from physical code. KPIs (like Average Power per Turbine, dynamically calculated as a ratio) are centrally defined in YAML, creating a true "Single Source of Truth" queryable by any BI tool.
-* **Extended Data Lineage & Exposures:** The Lineage Graph (DAG) extends beyond the DWH to application tools (e.g., PowerBI executive dashboards), enabling instant Impact Analysis and clearly indicating Data Steward ownership.
-
-### ⚙️ 4. Scalability & Efficiency (FinOps & DevOps)
-
-* **BigQuery Cost Optimization (FinOps):** Architecture designed to slash I/O costs. The combined use of time partitioning (`partition_by`), clustering, incremental models, and dynamic lookback filters in staging eliminates full-table scans, maximizing Partition Pruning.
-* **Asset Historization (SCD Type 2):** Automatic tracking of hardware's physical lifecycle via dbt Snapshots. Relocations or revamping of turbines do not retroactively alter past KPIs, ensuring an immutable energy audit trail.
-* **Jinja Metaprogramming (DRY):** Use of macros and dynamic for-loop constructs to automate complex aggregations (like pivoted power ranges), drastically reducing technical debt and accelerating the time-to-market for new features.
-* **DevOps, Slim CI & Deferral:** Optimized pipelines leveraging state comparison (`manifest.json`) and deferral (`--defer`) to process and test exclusively the models modified during Pull Requests, importing parent nodes from production for lightning-fast and cost-effective CI.
-
----
-
-## 🏗️ Architecture & Technology Stack
-
-The architecture is divided into three macro-modules, physically separated to support independent CI/CD pipelines:
-
-* **Python Data Ingestion (`data_ops_ingestion`):** Object-oriented module for the simulation and ingestion of sensor data. Implements Strict Type Safety logic towards BigQuery and intentionally injects anomalies (null values, thermal outliers) to test downstream pipeline resilience.
-* **Producer Domain (`platform_core`):** dbt Core project dedicated to pure Data Engineering. It maps sources, sanitizes data, historizes master data (SCD2), and applies complex physical-mathematical models.
-* **Consumer Domain (`analytics_hub`):** dbt Core project for Business Intelligence. It imports data from the core layer via Cross-Project References typical of Data Mesh logic, ignoring dev environments and pointing directly to production.
-
----
-
-## ✨ Enterprise Features Implemented
-
-This repository was developed strictly adhering to official dbt Labs standards and validated using the `dbt_project_evaluator` package.
-
-* 🛡️ **Data Contracts & Versioning:** Main fact table secured via contract: `enforced: true`. Structural changes managed via `latest_version` and scheduled deprecation policies, ensuring zero disruption for BI analysts.
-* 🐍 **Polyglot Data Transformation (dbt-Python):** Complex calculations executed natively in the DWH leveraging Python models integrated into the DAG (via Dataproc Serverless).
-* ⚙️ **Slim CI & Deferral:** Ready for DevOps automation via `--state` and `--defer` flags, processing only altered code during Pull Requests.
-* 📏 **Semantic Layer (MetricFlow):** Aggregation logic abstracted from physical SQL code. Complex metrics defined in YAML (`turbine_metrics.yml`).
-* 🧪 **Advanced Data Quality (Data Physics):** Singular SQL tests to validate real physical principles.
-
----
-
-## 📂 Repository Structure (Monorepo)
-
-```text
-aero-grid-platform/
-├── data_ops_ingestion/          # ELT Ingestion Engine (Python/Pandas/GCP)
-│   ├── config/                  
-│   ├── src/                     
-│   └── utils/                   
-├── platform_core/               # PRODUCER: Core Data Engineering (dbt)
-│   ├── macros/                  # Jinja utils & Dynamic Schema override
-│   ├── models/
-│   │   ├── staging/             # Hashing, standardization, and SLA monitor
-│   │   ├── intermediate/        # Ephemeral views, Python Models, Jinja loops
-│   │   ├── marts/               # Versioned Incremental Models (Gold Layer)
-│   │   └── semantic/            # Semantic layer definition
-│   ├── snapshots/               # SCD Type 2 for physical assets
-│   └── tests/                   # Singular tests on data physics
-└── analytics_hub/               # CONSUMER: Business Intelligence (dbt)
-    ├── dependencies.yml         # Local pointing to platform_core
-    └── models/                  
-
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-* Python 3.9+
-* dbt-core 1.8+ and `dbt-bigquery` plugin
-* Active Google Cloud Platform (BigQuery) credentials
-
-### Environment Setup
-
-**1. Profile Configuration (`profiles.yml`)**
-Configure the `~/.dbt/profiles.yml` file pointing to your Google Cloud project.
-
-**2. Run Ingestion**
-Simulate the generation and loading of raw telemetry data:
-
-```bash
-cd data_ops_ingestion
-python src/ingest_raw_data.py
-
-```
-
-**3. Build the Data Platform (Platform Core)**
-Install dependencies and execute the entire transformation and validation pipeline:
-
-```bash
-cd ../platform_core
-dbt deps
-dbt build
-
-```
-
-*(The `build` command will automatically concatenate run, test, snapshot, and seed validation).*
-
-**4. Explore via Analytics Hub**
-To simulate the BI team's workflow accessing governed data:
-
-```bash
-cd ../analytics_hub
-dbt deps
-dbt run
-
-```
-
----
-
-## 📖 Complete Architectural Documentation
-
-For an in-depth technical dive into all architectural choices, Jinja metaprogramming logic, FinOps, and Data Mesh configurations, please refer to the Architectural Playbook attached to the project:
-
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br><br>
-*Designed and developed by Eugenio Pasqua.*
-
 
