@@ -8,7 +8,7 @@ Sviluppato per simulare scenari reali ad alta intensità di dati (tipici del set
 ---
 
 ## 🎯 Executive Summary & Valore di Business
-Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati moderna per scenari ad alta intensità, posizionandosi come una soluzione "Enterprise-Ready" per leader industriali. L'architettura implementa le più avanzate best practice mondiali e gli standard ufficiali dbt Labs, strutturandosi su 4 pilastri strategici:
+Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati moderna per scenari ad alta intensità, posizionandosi come soluzione "Enterprise-Ready". L'architettura implementa le più avanzate best practice e gli standard ufficiali dbt Labs, strutturandosi su 4 pilastri strategici:
 
 ### 🏛️ 1. Architettura e Governance
 * **Data Mesh & Domain-Driven Design (Multi-Project):** Suddivisione in due progetti dbt distinti e interdipendenti per evitare colli di bottiglia organizzativi. `platform_core` (Producer) è gestito dal team Data Engineering per le trasformazioni core; `analytics_hub` (Consumer) è dedicato alla BI. Una macro custom forza l'ambiente consumer a interrogare sempre la produzione reale, garantendo il disaccoppiamento senza duplicazione dei dati.
