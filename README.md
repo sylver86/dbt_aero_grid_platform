@@ -101,11 +101,11 @@ classDiagram
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
----
+ 
 
 <br><br>
 
-### 🏗️ High-Level Focus Architettura
+## <p align="center"> 🏗️ High-Level Focus Architettura </p>
 
 ```mermaid
 graph TB
