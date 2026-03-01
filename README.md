@@ -48,7 +48,50 @@ Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati modern
 ## 🏗️ Architettura e Stack Tecnologico
 L'architettura si divide in tre macro-moduli, separati fisicamente per supportare pipeline CI/CD indipendenti:
 
-* **Python Data Ingestion (`data_ops_ingestion`):** Modulo ad oggetti per la simulazione e l'ingestion dei dati sensoriali. Implementa logiche di Strict Type Safety verso BigQuery e inietta volontariamente anomalie (valori nulli, outlier termici) per testare la resilienza della pipeline a valle.
+* **🐍 Python Data Ingestion (`data_ops_ingestion`):** Modulo ad oggetti per la simulazione e l'ingestion dei dati sensoriali verso BigQuery. Il codice è strutturato secondo principi di separazione delle responsabilità: la classe `TurbineDataGenerator` si occupa esclusivamente della generazione dei dati sintetici (anagrafica turbine e telemetria), mentre `BigQueryIngestor` gestisce la connessione al DWH e il caricamento tramite l'API nativa `google-cloud-bigquery`.
+
+    Tutta la configurazione è esternalizzata in file YAML (`simulation_config.yaml` per i parametri di generazione, `ingest_config.yaml` per la connessione BigQuery), rendendo il sistema completamente parametrizzabile senza modificare codice.
+
+    Il modulo implementa un sistema di **logging strutturato** tramite `RotatingFileHandler` con un custom `SectionFilter` che etichetta ogni log con la fase operativa corrente (es. `[GENERAZIONE DATI]`, `[DATA_INGESTION]`, `[CONNESSIONE]`), facilitando il debug in contesti di pipeline complesse. L'override di `sys.excepthook` garantisce che anche le eccezioni non gestite vengano catturate nei log, evitando crash silenziosi.
+
+    Sul fronte della **data quality**, il generatore inietta volontariamente anomalie configurabili: record con valori nulli su temperatura e vibrazione, outlier estremi (temperature a 550°C, RPM a -999 come sentinella di errore elettronico) e righe duplicate — il tutto per testare la resilienza dei layer dbt a valle.
+
+    Il caricamento su BigQuery adotta una **strategia duale**: autodetect per i metadati anagrafici (struttura semplice e stabile) e schema esplicito con `SchemaField` per la telemetria, dove il typing rigoroso di timestamp e float è critico per evitare errori di cast nei modelli dbt successivi.
+
+    Di seguito la struttura del modulo Python:
+
+    ```text
+    data_ops_ingestion/
+    ├── config/
+    │   ├── simulation_config.yaml     # Parametri di generazione: seed, num turbine,
+    │   │                              # intervalli, business rules (cut-in speed,
+    │   │                              # range temperatura/vibrazione), quantità di
+    │   │                              # anomalie da iniettare (null, outlier, duplicati)
+    │   └── ingest_config.yaml         # Connessione BigQuery: project_id, dataset_id,
+    │                                  # nomi tabelle di destinazione (metadata e telemetry)
+    ├── src/
+    │   ├── data_generation/
+    │   │   └── generate_data.py       # Classe TurbineDataGenerator: genera anagrafica
+    │   │                              # turbine (modello, location, capacity) e telemetria
+    │   │                              # sintetica (wind, rpm, power, temp, vibration)
+    │   │                              # con iniezione controllata di anomalie
+    │   └── ingestion/
+    │       └── ingest_raw_data.py     # Classe BigQueryIngestor: connessione via
+    │                                  # service account, creazione dataset, caricamento
+    │                                  # CSV con WRITE_TRUNCATE e schema esplicito
+    │                                  # per la type safety dei campi telemetrici
+    ├── utils/
+    │   └── logger_config.py           # Setup logging centralizzato: RotatingFileHandler
+    │                                  # (5MB, 3 backup), SectionFilter custom per
+    │                                  # etichettare le fasi operative, override di
+    │                                  # sys.excepthook per catturare eccezioni non gestite
+    └── raw_data/                      # Output: CSV generati (sensor_data.csv e
+                                       # turbines_metadata.csv) pronti per l'ingestion
+    ```
+
+    <br><br>
+
+    Ecco il diagramma classi UML del progetto:<br>
 
 ```mermaid
 
