@@ -101,9 +101,6 @@ classDiagram
 * ** ⚙️ Producer Domain (`platform_core`):** Il cuore dell'ingegneria dati di AeroGrid.  Questo progetto dbt è il Producer Domain responsabile dell'intero ciclo di vita del dato: dall'acquisizione delle fonti grezze fino alla produzione di Data Products certificati e governati.
 
 
-
-## 🔗 DAG — Model Dependency Graph
-
 Il grafo seguente mostra l'intera pipeline di trasformazione orchestrata da dbt, dalle sorgenti BigQuery fino agli asset esposti alla BI.
 
 ```mermaid
@@ -171,8 +168,8 @@ graph TD
 ```
 
  
-
-## 📁 Struttura
+<br><br>
+Di seguito la struttura del progetto core:<br>
 
 ```text
 platform_core/
@@ -210,161 +207,17 @@ platform_core/
 ```
 
  
-
-## ⚡ Quick Start
-
-```bash
-# Installa dipendenze
-dbt deps
-
-# Build completo (run + test + snapshot + seed)
-dbt build
-
-# Solo i modelli modificati (CI mode)
-dbt build --select state:modified+ --defer --state ./prod-artifacts/
-```
-
- 
-
-## 🔑 Macros Principali
-
-| Macro | File | Funzione |
-|:------|:-----|:---------|
-| `elab_power_theoretical(wind_column)` | `calculate_theoretical_power.sql` | Calcola P = 0.5 × v³ (legge fisica eolica semplificata) |
-| `kw_to_mw(column_name, precision)` | `conversion_utils.sql` | Conversione kW → MW con precisione configurabile |
-| `generate_schema_name(custom, node)` | `generate_schema_name.sql` | Routing dinamico: `target_schema + custom_schema` |
-
+  
 <br><br>
 
 * **📊 Analytics Hub — Consumer Domain (`analytics_hub`):** Il layer di Business Intelligence di AeroGrid. Questo progetto dbt è il Consumer Domain che importa i Data Products certificati dal Producer (`platform_core`) e li trasforma in viste pronte per dashboard, report e analisi ad-hoc.
 
 Seguendo i principi del **Data Mesh**, questo progetto non possiede né trasforma dati grezzi: consuma esclusivamente i Mart governati dal Producer tramite Cross-Project References, forzato a leggere sempre dalla produzione reale.
 
- 
-
-## 🔗 Architecture — Consumer Flow
-
-```mermaid
-graph LR
-    subgraph "⚙️ platform_core (Producer)"
-        direction TB
-        FCT["🏆 fct_turbine_telemetry<br/><b>Gold Layer</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Data Contract: enforced ✅<br/>Partitioned · Clustered<br/>Incremental MERGE"]
-        ZSCORE["🐍 int_turbine_vibration_anomalies<br/><b>Anomaly Detection</b><br/>Z-Score > 3"]
-        SNAP["📸 snp_turbine_assets<br/><b>SCD Type 2</b><br/>Asset history"]
-    end
-
-    subgraph "📊 analytics_hub (Consumer)"
-        direction TB
-        DEP["📦 dependencies.yml<br/><code>projects:</code><br/><code>&nbsp;&nbsp;- name: platform_core</code><br/><code>&nbsp;&nbsp;&nbsp;&nbsp;path: ../platform_core</code>"]
-
-        subgraph "models/"
-            RPT_PERF["📈 rpt_turbine_performance<br/><b>view</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Potenza reale vs teorica<br/>Efficiency ratio per turbina<br/>Aggregazione giornaliera"]
-            RPT_ALERT["🚨 rpt_anomaly_alerts<br/><b>view</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>Anomalie vibrazionali attive<br/>Join con asset history<br/>Priorità per severity"]
-            RPT_FLEET["🏭 rpt_fleet_overview<br/><b>view</b><br/>━━━━━━━━━━━━━━━━━━━━<br/>KPI aggregati della flotta<br/>Uptime · Capacity factor<br/>Location breakdown"]
-        end
-    end
-
-    subgraph "📈 BI Consumption"
-        PBI["PowerBI<br/>Executive Dashboard"]
-        LOOK["Looker / Tableau<br/>Self-service Analytics"]
-        NB["Jupyter Notebooks<br/>Ad-hoc Exploration"]
-    end
-
-    FCT ==>|"{{ ref('platform_core',<br/>'fct_turbine_telemetry') }}<br/>⚠️ Always reads PROD"| RPT_PERF
-    FCT ==>|"Cross-Project Ref"| RPT_FLEET
-    ZSCORE ==>|"Cross-Project Ref"| RPT_ALERT
-    SNAP ==>|"Cross-Project Ref"| RPT_ALERT
-
-    DEP -.-> RPT_PERF
-    DEP -.-> RPT_ALERT
-    DEP -.-> RPT_FLEET
-
-    RPT_PERF --> PBI
-    RPT_ALERT --> PBI
-    RPT_FLEET --> PBI
-    RPT_PERF --> LOOK
-    RPT_FLEET --> LOOK
-    RPT_ALERT --> NB
-
-    style FCT fill:#2ecc71,color:#fff
-    style ZSCORE fill:#9b59b6,color:#fff
-    style SNAP fill:#3498db,color:#fff
-    style RPT_PERF fill:#51cf66,color:#fff
-    style RPT_ALERT fill:#ff6b6b,color:#fff
-    style RPT_FLEET fill:#339af0,color:#fff
-    style PBI fill:#f1c40f,color:#333
-    style LOOK fill:#f1c40f,color:#333
-    style NB fill:#f1c40f,color:#333
-```
-
- 
-
-## 🛡️ Principio di Isolamento
-
-```mermaid
-graph TB
-    subgraph "❌ Cosa il Consumer NON può fare"
-        NO1["🚫 Accedere a dati raw"]
-        NO2["🚫 Leggere staging o intermediate"]
-        NO3["🚫 Modificare lo schema del Producer"]
-        NO4["🚫 Puntare ad ambienti dev/staging"]
-    end
-
-    subgraph "✅ Cosa il Consumer PUÒ fare"
-        YES1["✅ Leggere i Mart certificati (Gold)"]
-        YES2["✅ Creare viste di aggregazione BI"]
-        YES3["✅ Applicare filtri e join per il reporting"]
-        YES4["✅ Esporre dati a tool BI esterni"]
-    end
-
-    NO1 --- YES1
-    NO2 --- YES2
-    NO3 --- YES3
-    NO4 --- YES4
-
-    style NO1 fill:#e74c3c,color:#fff
-    style NO2 fill:#e74c3c,color:#fff
-    style NO3 fill:#e74c3c,color:#fff
-    style NO4 fill:#e74c3c,color:#fff
-    style YES1 fill:#2ecc71,color:#fff
-    style YES2 fill:#2ecc71,color:#fff
-    style YES3 fill:#2ecc71,color:#fff
-    style YES4 fill:#2ecc71,color:#fff
-```
-
+ <br><br>
 Il Consumer non ha mai visibilità sui layer interni del Producer. Se il team Data Engineering modifica la logica di staging o intermediate, il Consumer non è impattato finché il contratto del Mart resta valido. Questo è il **disaccoppiamento** garantito dal pattern Data Mesh.
 
- 
-
-## 📁 Struttura
-
-```text
-analytics_hub/
-├── models/
-│   ├── _schema.yml                        # Test e documentazione modelli consumer
-│   ├── rpt_turbine_performance.sql        # Performance reale vs teorica
-│   ├── rpt_anomaly_alerts.sql             # Alert anomalie vibrazionali
-│   └── rpt_fleet_overview.sql             # KPI flotta aggregati
-├── dependencies.yml                       # Cross-project ref a platform_core
-└── dbt_project.yml
-```
-
- 
-
-## ⚡ Quick Start
-
-```bash
-# Installa dipendenze (scarica il riferimento a platform_core)
-dbt deps
-
-# Esegui i modelli consumer
-dbt run
-
-# Testa i modelli
-dbt test
-```
-
-> ⚠️ **Prerequisito:** Il progetto `platform_core` deve essere stato eseguito almeno una volta in produzione affinché i Cross-Project References trovino le tabelle di destinazione.
+ > ⚠️ **Prerequisito:** Il progetto `platform_core` deve essere stato eseguito almeno una volta in produzione affinché i Cross-Project References trovino le tabelle di destinazione.
 
 <br><br><br><br>
 
