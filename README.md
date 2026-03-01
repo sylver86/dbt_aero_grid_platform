@@ -49,6 +49,64 @@ L'architettura si divide in tre macro-moduli, separati fisicamente per supportar
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
+```mermaid
+graph TB
+    subgraph "🌐 Data Sources"
+        S1[("🏭 SCADA Gateway<br/>Turbine Sensors")]
+        S2[("📊 Asset Registry<br/>Turbine Metadata")]
+    end
+
+    subgraph "🐍 Ingestion Layer — Python"
+        direction TB
+        GEN["generate_data.py<br/><i>TurbineDataGenerator</i><br/>Synthetic data + anomaly injection"]
+        ING["ingest_raw_data.py<br/><i>BigQueryIngestor</i><br/>Strict Type Safety + WRITE_TRUNCATE"]
+    end
+
+    subgraph "☁️ Google Cloud Platform"
+        BQ_RAW[("BigQuery<br/><b>aero_grid_raw</b><br/>Raw Landing Zone")]
+
+        subgraph "⚙️ platform_core — Producer Domain (dbt)"
+            STG["Staging Layer<br/><code>stg_*</code><br/>Views"]
+            INT["Intermediate Layer<br/><code>int_*</code><br/>Ephemeral + Python"]
+            MART["Marts Layer<br/><code>fct_*</code><br/>Incremental Tables"]
+            SNAP["Snapshots<br/><code>snp_*</code><br/>SCD Type 2"]
+            SEED["Seeds<br/><code>turbine_codes</code><br/>Lookup Tables"]
+        end
+
+        subgraph "📊 analytics_hub — Consumer Domain (dbt)"
+            CONS["Consumer Models<br/>Cross-Project Ref<br/>→ Always reads PROD"]
+        end
+
+        BQ_MART[("BigQuery<br/><b>aero_grid_mart</b><br/>Gold Layer")]
+    end
+
+    subgraph "📈 Consumption"
+        PBI["PowerBI<br/>Executive Dashboard"]
+        ML["Python / Dataproc<br/>Predictive Maintenance"]
+        API["API / Notebooks<br/>Ad-hoc Analytics"]
+    end
+
+    S1 --> GEN
+    S2 --> GEN
+    GEN --> ING
+    ING --> BQ_RAW
+    BQ_RAW --> STG
+    STG --> INT
+    INT --> MART
+    MART --> BQ_MART
+    STG --> SNAP
+    SEED --> STG
+    BQ_MART --> CONS
+    CONS --> PBI
+    MART --> ML
+    BQ_MART --> API
+
+    style BQ_RAW fill:#ff6b6b,color:#fff
+    style BQ_MART fill:#51cf66,color:#fff
+    style MART fill:#339af0,color:#fff
+```
+
+
 ---
 
 ## ✨ Enterprise Features Implementate
@@ -137,7 +195,7 @@ dbt run
 
 Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di metaprogrammazione Jinja, la FinOps e le configurazioni del Data Mesh, consultare il Manuale Architetturale allegato al progetto:
 
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br>
+👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br><br>
 *Progettato e sviluppato da Eugenio Pasqua.*
 
 ---
@@ -284,9 +342,7 @@ dbt run
 
 For an in-depth technical dive into all architectural choices, Jinja metaprogramming logic, FinOps, and Data Mesh configurations, please refer to the Architectural Playbook attached to the project:
 
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)**
+👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br><br>
 *Designed and developed by Eugenio Pasqua.*
 
-```
 
-```
