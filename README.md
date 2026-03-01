@@ -143,7 +143,7 @@ classDiagram
 
 <br><br>
 
-* **⚙️ Producer Domain (`platform_core`):** Il cuore dell'ingegneria dati di AeroGrid.  Questo progetto dbt è il Producer Domain responsabile dell'intero ciclo di vita del dato: dall'acquisizione delle fonti grezze fino alla produzione di Data Products certificati e governati. Il grafo seguente mostra l'intera pipeline di trasformazione orchestrata da dbt, dalle sorgenti BigQuery fino agli asset esposti alla BI.
+* **⚙️ DBT Producer Domain (`platform_core`):** Il cuore dell'ingegneria dati di AeroGrid.  Questo progetto dbt è il Producer Domain responsabile dell'intero ciclo di vita del dato: dall'acquisizione delle fonti grezze fino alla produzione di Data Products certificati e governati. Il grafo seguente mostra l'intera pipeline di trasformazione orchestrata da dbt, dalle sorgenti BigQuery fino agli asset esposti alla BI.
 
 ```mermaid
 graph TD
@@ -252,7 +252,7 @@ platform_core/
   
 <br><br>
 
-* **📊 Analytics Hub — Consumer Domain (`analytics_hub`):** Il layer di Business Intelligence di AeroGrid. Questo progetto dbt è il Consumer Domain che importa i Data Products certificati dal Producer (`platform_core`) e li trasforma in viste pronte per dashboard, report e analisi ad-hoc.Seguendo i principi del **Data Mesh**, questo progetto non possiede né trasforma dati grezzi: consuma esclusivamente i Mart governati dal Producer tramite Cross-Project References, forzato a leggere sempre dalla produzione reale.Il Consumer non ha mai visibilità sui layer interni del Producer. Se il team Data Engineering modifica la logica di staging o intermediate, il Consumer non è impattato finché il contratto del Mart resta valido. Questo è il **disaccoppiamento** garantito dal pattern Data Mesh.
+* **📊 DBT Analytics Hub — Consumer Domain (`analytics_hub`):** Il layer di Business Intelligence di AeroGrid. Questo progetto dbt è il Consumer Domain che importa i Data Products certificati dal Producer (`platform_core`) e li trasforma in viste pronte per dashboard, report e analisi ad-hoc.Seguendo i principi del **Data Mesh**, questo progetto non possiede né trasforma dati grezzi: consuma esclusivamente i Mart governati dal Producer tramite Cross-Project References, forzato a leggere sempre dalla produzione reale.Il Consumer non ha mai visibilità sui layer interni del Producer. Se il team Data Engineering modifica la logica di staging o intermediate, il Consumer non è impattato finché il contratto del Mart resta valido. Questo è il **disaccoppiamento** garantito dal pattern Data Mesh.
 
  > ⚠️ **Prerequisito:** Il progetto `platform_core` deve essere stato eseguito almeno una volta in produzione affinché i Cross-Project References trovino le tabelle di destinazione.
 
