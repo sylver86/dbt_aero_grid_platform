@@ -107,7 +107,7 @@ classDiagram
 
 ## <p align="center"> 🏗️ High-Level Focus Architecture </p>
 
-L'architettura end-to-end segue un flusso lineare dai sensori SCADA fino alla BI. I dati grezzi vengono generati e caricati su BigQuery dal modulo Python, attraversano i tre layer dbt del Producer Domain (Staging → Intermediate → Marts), e raggiungono il Consumer Domain che li espone a PowerBI, modelli predittivi e notebook di analisi. Ogni macro-modulo è fisicamente separato per consentire pipeline CI/CD indipendenti.
+L'architettura end-to-end segue un flusso lineare dai sensori SCADA (Supervisory Control And Data Acquisition) fino alla BI. I dati grezzi vengono generati e caricati su BigQuery dal modulo Python, attraversano i tre layer dbt del Producer Domain (Staging → Intermediate → Marts), e raggiungono il Consumer Domain che li espone a PowerBI, modelli predittivi e notebook di analisi. Ogni macro-modulo è fisicamente separato per consentire pipeline CI/CD indipendenti.
 <br><br>
 
 ```mermaid
@@ -569,7 +569,7 @@ classDiagram
 
 ## <p align="center"> 🏗️ High-Level Architecture Focus </p>
 
-The end-to-end architecture follows a linear flow from SCADA sensors to BI. Raw data is generated and loaded into BigQuery by the Python module, flows through the three dbt layers of the Producer Domain (Staging → Intermediate → Marts), and reaches the Consumer Domain which exposes it to PowerBI, predictive models, and analytics notebooks. Each macro-module is physically separated to enable independent CI/CD pipelines.
+The end-to-end architecture follows a linear flow from SCADA (Supervisory Control And Data Acquisition) sensors to BI. Raw data is generated and loaded into BigQuery by the Python module, flows through the three dbt layers of the Producer Domain (Staging → Intermediate → Marts), and reaches the Consumer Domain which exposes it to PowerBI, predictive models, and analytics notebooks. Each macro-module is physically separated to enable independent CI/CD pipelines.
 
 <br><br>
 
