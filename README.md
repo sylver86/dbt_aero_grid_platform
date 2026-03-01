@@ -607,11 +607,6 @@ dbt run
 
 ---
 
-<br><br>
-
-
- 
-
 # 🇬🇧 ENGLISH VERSION
 
 # 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
@@ -663,7 +658,50 @@ The project tackles and resolves the critical challenges of modern data engineer
 ## 🏗️ Architecture & Technology Stack
 The architecture is divided into three macro-modules, physically separated to support independent CI/CD pipelines:
 
-* **Python Data Ingestion (`data_ops_ingestion`):** Object-oriented module for the simulation and ingestion of sensor data. Implements Strict Type Safety logic towards BigQuery and intentionally injects anomalies (null values, thermal outliers) to test downstream pipeline resilience.
+* **🐍 Python Data Ingestion (`data_ops_ingestion`):** Object-oriented module for the simulation and ingestion of sensor data into BigQuery. The code is structured following separation of concerns principles: the `TurbineDataGenerator` class is solely responsible for synthetic data generation (turbine master data and telemetry), while `BigQueryIngestor` handles the DWH connection and loading via the native `google-cloud-bigquery` API.
+
+    All configuration is externalized into YAML files (`simulation_config.yaml` for generation parameters, `ingest_config.yaml` for the BigQuery connection), making the system fully parameterizable without code changes.
+
+    The module implements a **structured logging** system via `RotatingFileHandler` with a custom `SectionFilter` that tags every log entry with the current operational phase (e.g., `[DATA_GENERATION]`, `[DATA_INGESTION]`, `[CONNECTION]`), facilitating debugging in complex pipeline contexts. The `sys.excepthook` override ensures that even unhandled exceptions are captured in logs, preventing silent crashes.
+
+    On the **data quality** front, the generator intentionally injects configurable anomalies: records with null values on temperature and vibration, extreme outliers (temperatures at 550°C, RPM at -999 as an electronic error sentinel), and duplicate rows — all designed to stress-test the resilience of downstream dbt layers.
+
+    The BigQuery loading adopts a **dual strategy**: autodetect for master data (simple and stable structure) and explicit schema with `SchemaField` for telemetry, where strict typing of timestamps and floats is critical to avoid cast errors in subsequent dbt models.
+
+    Below is the Python module structure:
+
+    ```text
+    data_ops_ingestion/
+    ├── config/
+    │   ├── simulation_config.yaml     # Generation parameters: seed, num turbines,
+    │   │                              # intervals, business rules (cut-in speed,
+    │   │                              # temp/vibration ranges), number of anomalies
+    │   │                              # to inject (nulls, outliers, duplicates)
+    │   └── ingest_config.yaml         # BigQuery connection: project_id, dataset_id,
+    │                                  # target table names (metadata and telemetry)
+    ├── src/
+    │   ├── data_generation/
+    │   │   └── generate_data.py       # TurbineDataGenerator class: generates turbine
+    │   │                              # master data (model, location, capacity) and
+    │   │                              # synthetic telemetry (wind, rpm, power, temp,
+    │   │                              # vibration) with controlled anomaly injection
+    │   └── ingestion/
+    │       └── ingest_raw_data.py     # BigQueryIngestor class: connection via service
+    │                                  # account, dataset creation, CSV loading with
+    │                                  # WRITE_TRUNCATE and explicit schema for
+    │                                  # telemetry field type safety
+    ├── utils/
+    │   └── logger_config.py           # Centralized logging setup: RotatingFileHandler
+    │                                  # (5MB, 3 backups), custom SectionFilter to tag
+    │                                  # operational phases, sys.excepthook override
+    │                                  # to capture unhandled exceptions
+    └── raw_data/                      # Output: generated CSVs (sensor_data.csv and
+                                       # turbines_metadata.csv) ready for ingestion
+    ```
+
+    <br><br>
+
+    Below is the UML class diagram of the project:<br>
 
 ```mermaid
 
@@ -712,10 +750,10 @@ classDiagram
     note for BigQueryIngestor "Type Safety:\n• Metadata: autodetect\n• Telemetry: explicit schema\n  (TIMESTAMP, STRING, FLOAT64)"
 
 ```
- 
- <br><br>
 
-* **⚙️ Producer Domain (`platform_core`):** The data engineering core of AeroGrid. This dbt project is the Producer Domain responsible for the entire data lifecycle: from raw source acquisition to the production of certified and governed Data Products. The following graph shows the complete transformation pipeline orchestrated by dbt, from BigQuery sources to the assets exposed to BI.
+<br><br>
+
+* **⚙️ dbt Producer Domain (`platform_core`):** The data engineering core of AeroGrid. This dbt project is the Producer Domain responsible for the entire data lifecycle: from raw source acquisition to the production of certified and governed Data Products. The following graph shows the complete transformation pipeline orchestrated by dbt, from BigQuery sources to the assets exposed to BI.
 
 ```mermaid
 graph TD
@@ -824,16 +862,15 @@ platform_core/
   
 <br><br>
 
-* **📊 Analytics Hub — Consumer Domain (`analytics_hub`):** The Business Intelligence layer of AeroGrid. This dbt project is the Consumer Domain that imports certified Data Products from the Producer (`platform_core`) and transforms them into views ready for dashboards, reports, and ad-hoc analysis. Following **Data Mesh** principles, this project does not own or transform raw data: it exclusively consumes the governed Marts from the Producer via Cross-Project References, forced to always read from actual production. The Consumer never has visibility into the Producer's internal layers. If the Data Engineering team modifies staging or intermediate logic, the Consumer is not impacted as long as the Mart contract remains valid. This is the **decoupling** guaranteed by the Data Mesh pattern.
+* **📊 dbt Analytics Hub — Consumer Domain (`analytics_hub`):** The Business Intelligence layer of AeroGrid. This dbt project is the Consumer Domain that imports certified Data Products from the Producer (`platform_core`) and transforms them into views ready for dashboards, reports, and ad-hoc analysis. Following **Data Mesh** principles, this project does not own or transform raw data: it exclusively consumes the governed Marts from the Producer via Cross-Project References, forced to always read from actual production. The Consumer never has visibility into the Producer's internal layers. If the Data Engineering team modifies staging or intermediate logic, the Consumer is not impacted as long as the Mart contract remains valid. This is the **decoupling** guaranteed by the Data Mesh pattern.
 
  > ⚠️ **Prerequisite:** The `platform_core` project must have been executed at least once in production for the Cross-Project References to find the target tables.
 
-<br><br>
+<br><br><br><br>
 
 ## <p align="center"> 🏗️ High-Level Architecture Focus </p>
 
-The end-to-end architecture follows a linear flow from SCADA (Supervisory Control And Data Acquisition) sensors to BI. Raw data is generated and loaded into BigQuery by the Python module, flows through the three dbt layers of the Producer Domain (Staging → Intermediate → Marts), and reaches the Consumer Domain which exposes it to PowerBI, predictive models, and analytics notebooks. Each macro-module is physically separated to enable independent CI/CD pipelines.
-
+Looking at the full end-to-end architecture with all its modules, it follows a linear flow from SCADA (Supervisory Control And Data Acquisition) sensors to BI. Raw data is generated and loaded into BigQuery by the Python module, flows through the three dbt layers of the Producer Domain (Staging → Intermediate → Marts), and reaches the Consumer Domain which exposes it to PowerBI, predictive models, and analytics notebooks. Each macro-module is physically separated to enable independent CI/CD pipelines.
 <br><br>
 
 ```mermaid
@@ -899,7 +936,7 @@ graph TB
 
 ## <p align="center">  🥇 Medallion Architecture — Layer Detail </p>
 
-Data flows through three progressive refinement layers. The Bronze (Raw Landing Zone) contains raw, untyped data as it arrives from sensors. The Silver (Staging) applies hashing, deduplication, type casting, and plausibility filters. The Gold (Intermediate + Marts) computes theoretical power via physics macros, runs anomaly detection in Python, and produces the certified fact table with Data Contract, partitioning, and clustering optimized for BigQuery.
+From a structural standpoint, the diagram below shows that data flows through three progressive refinement layers. The Bronze (Raw Landing Zone) contains raw, untyped data as it arrives from sensors. The Silver (Staging) applies hashing, deduplication, type casting, and plausibility filters. The Gold (Intermediate + Marts) computes theoretical power via physics macros, runs anomaly detection in Python, and produces the certified fact table with Data Contract, partitioning, and clustering optimized for BigQuery.
 
 <br><br>
 
@@ -950,7 +987,8 @@ graph TB
 
 ## <p align="center">  🔀 Data Mesh & Governance — Multi-Project Topology </p>
 
-The Producer/Consumer separation implements Data Mesh principles. The platform_core project owns and governs data end-to-end up to the certified Mart, secured by Data Contracts and Model Versioning. The analytics_hub project consumes data exclusively via Cross-Project References, forced to always read from actual production. Ownership is tracked through Exposures that link dbt models to external application assets such as PowerBI dashboards.
+For data governance, the Producer/Consumer separation implements Data Mesh principles. The `platform_core` project owns and governs data end-to-end up to the certified Mart, secured by Data Contracts and Model Versioning. The `analytics_hub` project consumes data exclusively via Cross-Project References, forced to always read from actual production. Ownership is tracked through Exposures that link dbt models to external application assets such as PowerBI dashboards.
+
 <br><br>
 
 ```mermaid
@@ -1168,6 +1206,10 @@ dbt deps
 dbt run
 
 ```
+
+<br><br>
+
+*Designed and developed by Eugenio Pasqua.*
 
 ---
 
