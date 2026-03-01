@@ -42,7 +42,7 @@ Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati modern
 * **Metaprogrammazione Jinja (DRY):** Utilizzo di macro e costrutti for-loop dinamici per automatizzare aggregazioni complesse (come i range di potenza pivotati), riducendo drasticamente il debito tecnico e accelerando il time-to-market di nuove feature.
 * **DevOps, Slim CI & Deferral:** Pipeline ottimizzate che sfruttano il confronto di stato (`manifest.json`) e il deferral (`--defer`) per elaborare e testare esclusivamente i modelli modificati durante le Pull Request, importando i nodi genitore dalla produzione per una CI velocissima ed economica.
 
----
+ <br><br>
 
 
 ## 🏗️ Architettura e Stack Tecnologico
@@ -168,7 +168,7 @@ graph TB
 
 <br><br>
 
-### 🥇 Medallion Architecture — Layer Detail
+## <p align="center">  🥇 Medallion Architecture — Layer Detail </p>
 
 ```mermaid
 graph TB
@@ -215,7 +215,7 @@ graph TB
 
 <br><br>
 
-### 🔀 Data Mesh — Multi-Project Topology
+## <p align="center">  🔀 Data Mesh — Multi-Project Topology </p>
 
 ```mermaid
 graph LR
@@ -261,7 +261,7 @@ graph LR
 
 
 
----
+<br><br>
 
 ## ✨ Enterprise Features Implementate
 Questo repository è stato sviluppato seguendo rigorosamente gli standard ufficiali di dbt Labs e validato tramite il pacchetto `dbt_project_evaluator`.
@@ -272,7 +272,7 @@ Questo repository è stato sviluppato seguendo rigorosamente gli standard uffici
 * 📏 **Semantic Layer (MetricFlow):** Astrazione delle logiche aggregative dal codice SQL fisico. Metriche complesse (es. potenze medie e ratio) sono definite in YAML (`turbine_metrics.yml`), garantendo una singola "Source of Truth" per l'azienda.
 * 🧪 **Advanced Data Quality (Data Physics):** Oltre ai test relazionali e ai bound parametrici (`dbt_utils.accepted_range`), il progetto include test SQL singolari per validare veri e propri principi fisici (es. impossibilità di generare energia in assenza di vento).
 
----
+<br><br>
 
 ## 📂 Struttura del Repository (Monorepo)
 
@@ -297,7 +297,7 @@ aero-grid-platform/
 
 ```
 
----
+<br><br>
 
 
 ## 🧰 Technology Stack Summary
@@ -386,7 +386,7 @@ mindmap
 | | Deferral | `--defer` reads parent nodes from production | — |
 | | FinOps | Partition pruning + clustering + ephemeral CTE | — |
 
----
+ <br><br><br>
 
 
 ## 🚀 Getting Started
