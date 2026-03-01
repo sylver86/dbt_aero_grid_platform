@@ -573,6 +573,10 @@ classDiagram
 
 ## <p align="center"> 🏗️ High-Level Architecture Focus </p>
 
+The end-to-end architecture follows a linear flow from SCADA sensors to BI. Raw data is generated and loaded into BigQuery by the Python module, flows through the three dbt layers of the Producer Domain (Staging → Intermediate → Marts), and reaches the Consumer Domain which exposes it to PowerBI, predictive models, and analytics notebooks. Each macro-module is physically separated to enable independent CI/CD pipelines.
+
+<br><br>
+
 ```mermaid
 graph TB
     subgraph "🌐 Data Sources"
@@ -636,6 +640,10 @@ graph TB
 
 ## <p align="center">  🥇 Medallion Architecture — Layer Detail </p>
 
+Data flows through three progressive refinement layers. The Bronze (Raw Landing Zone) contains raw, untyped data as it arrives from sensors. The Silver (Staging) applies hashing, deduplication, type casting, and plausibility filters. The Gold (Intermediate + Marts) computes theoretical power via physics macros, runs anomaly detection in Python, and produces the certified fact table with Data Contract, partitioning, and clustering optimized for BigQuery.
+
+<br><br>
+
 ```mermaid
 graph TB
     subgraph "🟤 BRONZE — Raw Landing Zone"
@@ -682,6 +690,9 @@ graph TB
 <br><br>
 
 ## <p align="center">  🔀 Data Mesh & Governance — Multi-Project Topology </p>
+
+The Producer/Consumer separation implements Data Mesh principles. The platform_core project owns and governs data end-to-end up to the certified Mart, secured by Data Contracts and Model Versioning. The analytics_hub project consumes data exclusively via Cross-Project References, forced to always read from actual production. Ownership is tracked through Exposures that link dbt models to external application assets such as PowerBI dashboards.
+<br><br>
 
 ```mermaid
 graph LR
