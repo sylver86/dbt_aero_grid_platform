@@ -137,7 +137,7 @@ dbt run
 
 Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di metaprogrammazione Jinja, la FinOps e le configurazioni del Data Mesh, consultare il Manuale Architetturale allegato al progetto:
 
-👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)**
+👉 **[Enterprise Data Architecture Playbook: AeroGrid Platform](https://www.google.com/search?q=%23)** <br>
 *Progettato e sviluppato da Eugenio Pasqua.*
 
 ---
@@ -148,14 +148,7 @@ Per un approfondimento tecnico su tutte le scelte architetturali, i logismi di m
 
 # 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
 
-<p align="center">
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/Python-3.9+-blue?logo=python%26logoColor=white" alt="Python" />
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/dbt--core-1.8+-orange?logo=dbt%26logoColor=white" alt="dbt" />
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/GCP_BigQuery-Cloud--DWH-blue?logo=googlecloud%26logoColor=white" alt="Google Cloud Platform" />
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/FinOps-cost--efficient-success?logo=moneygram%26logoColor=white" alt="FinOps" />
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/dbt--evaluator-validated-brightgreen?logo=checkmarx%26logoColor=white" alt="dbt project evaluator" />
-<img src="https://www.google.com/url?sa=E&source=gmail&q=https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
-</p>
+ 
 
 **AeroGrid Platform** is an end-to-end Enterprise data infrastructure designed for the ingestion, processing, and advanced analysis of IoT telemetry data coming from a fleet of wind turbines.
 
