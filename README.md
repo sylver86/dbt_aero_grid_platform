@@ -49,6 +49,8 @@ L'architettura si divide in tre macro-moduli, separati fisicamente per supportar
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
+### 🏗️ High-Level Focus Architettura
+
 ```mermaid
 graph TB
     subgraph "🌐 Data Sources"
@@ -105,6 +107,138 @@ graph TB
     style BQ_MART fill:#51cf66,color:#fff
     style MART fill:#339af0,color:#fff
 ```
+
+
+### 🥇 Medallion Architecture — Layer Detail
+
+```mermaid
+graph TB
+    subgraph "🟤 BRONZE — Raw Landing Zone"
+        RAW_TEL["raw_turbine_telemetry<br/><i>7 columns, untyped</i><br/>timestamp, turbine_id,<br/>wind_speed_ms, rpm,<br/>power_output_kw_,<br/>temperature_c, vibration_index"]
+        RAW_ASS["raw_turbine_assets<br/><i>5 columns</i><br/>turbine_id, model,<br/>location, installation_date,<br/>capacity_kw"]
+    end
+
+    subgraph "🥈 SILVER — Staging Layer (schema: stg)"
+        STG_TEL["stg_turbine_telemetry<br/><b>Incremental MERGE</b><br/>━━━━━━━━━━━━━━━<br/>+ telemetry_key (MD5 hash)<br/>+ CAST timestamp → TIMESTAMP<br/>+ TRIM turbine_id<br/>+ rpm sentinel -999 → NULL<br/>+ temperature_c ≤ 100 filter<br/>+ vibration 0..5 filter<br/>+ Lookback: last 7 days<br/>+ Deduplication: DISTINCT"]
+        STG_ASS["stg_turbine_assets<br/><b>View</b><br/>━━━━━━━━━━━━━━━<br/>+ turbine_key (MD5 hash)<br/>+ CAST installation_date → DATE<br/>+ capacity_kw: 0 → NULL<br/>+ Deduplication: DISTINCT"]
+        SEED_LC["stg_lookup_turbine_error_code<br/><b>Seed (CSV)</b><br/>━━━━━━━━━━━━━━━<br/>code, severity,<br/>description, action_required"]
+    end
+
+    subgraph "🥇 GOLD — Intermediate + Marts"
+        INT_PERF["int_turbine_performance_check<br/><b>Ephemeral</b><br/>━━━━━━━━━━━━━━━<br/>+ theoretical_power_mw<br/>&nbsp;&nbsp;= ROUND(wind³ × 0.5, 2)<br/>&nbsp;&nbsp;via macro elab_power_theoretical"]
+        INT_PIVOT["int_turbine_range_pivot<br/><b>View</b><br/>━━━━━━━━━━━━━━━<br/>Jinja FOR loop su soglie:<br/>[100, 500, 1000, 2000] kW<br/>→ readings_above_*_kw"]
+        INT_ZSCORE["int_turbine_vibration_anomalies<br/><b>Table (Python / Dataproc)</b><br/>━━━━━━━━━━━━━━━<br/>Z-Score = (val - μ) / σ<br/>Filter: |Z| > 3<br/>pandas groupby + transform"]
+        FCT["fct_turbine_telemetry<br/><b>Incremental MERGE</b><br/>━━━━━━━━━━━━━━━<br/>+ power_output_mw (kW→MW macro)<br/>+ theoretical_power_mw<br/>+ Partition: DAY on measurement_at<br/>+ Cluster: turbine_id<br/>+ Data Contract: enforced ✅<br/>+ on_schema_change: fail"]
+    end
+
+    subgraph "📸 Snapshots"
+        SCD["snp_turbine_assets<br/><b>SCD Type 2</b><br/>━━━━━━━━━━━━━━━<br/>strategy: check<br/>check_cols: capacity_kw,<br/>&nbsp;&nbsp;location, model<br/>unique_key: turbine_id"]
+    end
+
+    RAW_TEL --> STG_TEL
+    RAW_ASS --> STG_ASS
+    STG_TEL --> INT_PERF
+    INT_PERF --> INT_PIVOT
+    INT_PERF --> FCT
+    FCT --> INT_ZSCORE
+    RAW_ASS --> SCD
+    STG_ASS -.->|ref integrity test| STG_TEL
+
+    style RAW_TEL fill:#cd853f,color:#fff
+    style RAW_ASS fill:#cd853f,color:#fff
+    style STG_TEL fill:#c0c0c0,color:#333
+    style STG_ASS fill:#c0c0c0,color:#333
+    style FCT fill:#ffd700,color:#333
+    style INT_ZSCORE fill:#9b59b6,color:#fff
+```
+
+### 🔄 Data Flow — End-to-End Pipeline
+
+```mermaid
+flowchart LR
+    subgraph "1. GENERATE"
+        A["🎲 Synthetic Data<br/>15 turbine × 1000 readings<br/>+ 18 NULLs<br/>+ 50 Outliers<br/>+ 15 Duplicates"]
+    end
+
+    subgraph "2. INGEST"
+        B["📤 BigQuery Load<br/>WRITE_TRUNCATE<br/>Strict Schema for Telemetry<br/>Autodetect for Metadata"]
+    end
+
+    subgraph "3. STAGE"
+        C["🧹 Cleansing<br/>CAST types<br/>TRIM strings<br/>NULL sentinels → NULL<br/>Surrogate Keys (MD5)<br/>Deduplication<br/>Lookback Filter (7 days)"]
+    end
+
+    subgraph "4. INTERMEDIATE"
+        D["🔬 Enrichment<br/>Theoretical Power (Jinja UDF)<br/>Vibration Z-Score (Python)<br/>Range Pivot (Jinja loop)"]
+    end
+
+    subgraph "5. MART"
+        E["🏆 Gold Layer<br/>Incremental MERGE<br/>Partition by DAY<br/>Cluster by turbine_id<br/>Data Contract enforced"]
+    end
+
+    subgraph "6. CONSUME"
+        F["📊 BI & ML<br/>PowerBI Dashboard<br/>Anomaly Alerts<br/>Predictive Maintenance"]
+    end
+
+    A -->|CSV files| B
+    B -->|aero_grid_raw| C
+    C -->|Views| D
+    D -->|Ephemeral| E
+    E -->|Tables| F
+
+    style A fill:#ffe066,color:#333
+    style B fill:#ffa94d,color:#333
+    style C fill:#ff8787,color:#fff
+    style D fill:#da77f2,color:#fff
+    style E fill:#51cf66,color:#fff
+    style F fill:#339af0,color:#fff
+
+```
+
+### 🔀 Data Mesh — Multi-Project Topology
+
+```mermaid
+graph LR
+    subgraph "PRODUCER — platform_core"
+        direction TB
+        PC_STG["staging/"]
+        PC_INT["intermediate/"]
+        PC_MART["marts/<br/><b>fct_turbine_telemetry</b><br/>Data Contract ✅"]
+        PC_SEM["semantic/<br/>MetricFlow definitions"]
+        PC_SNAP["snapshots/<br/>SCD2 assets"]
+
+        PC_STG --> PC_INT --> PC_MART
+        PC_MART --> PC_SEM
+    end
+
+    subgraph "CONSUMER — analytics_hub"
+        direction TB
+        AH_DEP["dependencies.yml<br/><code>projects:<br/>&nbsp;&nbsp;- name: platform_core<br/>&nbsp;&nbsp;&nbsp;&nbsp;path: ../platform_core</code>"]
+        AH_MOD["models/<br/>BI-layer views &<br/>report-ready aggregations"]
+
+        AH_DEP --> AH_MOD
+    end
+
+    PC_MART ==>|"Cross-Project Ref<br/>{{ ref('platform_core', 'fct_turbine_telemetry') }}<br/>⚠️ Always reads PRODUCTION"| AH_MOD
+
+    subgraph "GOVERNANCE"
+        GOV1["🛡️ Data Contract<br/>enforced: true"]
+        GOV2["📋 Model Versioning<br/>latest_version + deprecation"]
+        GOV3["👤 Data Steward<br/>Eugenio Pasqua<br/>(exposures.yml)"]
+    end
+
+    PC_MART --- GOV1
+    PC_MART --- GOV2
+    PC_MART --- GOV3
+
+    style PC_MART fill:#339af0,color:#fff
+    style AH_MOD fill:#51cf66,color:#fff
+    style GOV1 fill:#ff6b6b,color:#fff
+    style GOV2 fill:#ff6b6b,color:#fff
+    style GOV3 fill:#ff6b6b,color:#fff
+
+```
+
 
 
 ---
