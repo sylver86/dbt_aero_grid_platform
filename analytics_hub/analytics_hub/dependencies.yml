@@ -1,5 +1,0 @@
-projects:
-    - name: platform_core
-      # In dbt Core (open source), puntiamo ancora al repo Git per i metadati
-      git: "https://github.com/sylver86/aero_grid_platform_core.git"
-      revision: main

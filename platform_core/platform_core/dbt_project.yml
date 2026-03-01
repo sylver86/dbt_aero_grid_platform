@@ -39,6 +39,8 @@ models:
       +materialized: view
       +schema: int
     marts:
+      +access: public                                                                               # Importante per abilitare il Mesh verso un altro progetto e quindi definiamo anche al suo interno il 'contract'
+      +group: platform_core_public                                                                  # Definizione del gruppo che è responsabile dell'esposizione del modello.
       +materialized: table
       +schema: mart
 
@@ -54,7 +56,7 @@ seeds:                                                                          
 
 snapshots:
   platform_core:                                                                                    # Il nome del progetto dbt
-    +target_schema: aero_grid_snapshots                                                             # Lo schema finale 
+    +target_schema: aero_grid_snapshots                                                             # Lo schema finale
 
 
 vars:

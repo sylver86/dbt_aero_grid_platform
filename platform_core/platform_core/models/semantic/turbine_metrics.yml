@@ -1,0 +1,61 @@
+
+semantic_models:
+  - name: total_power                                                                               # Nome della misura
+    description: "Potenza totale erogata"
+
+    model: ref('fct_turbine_telemetry')                                                             # Puntiamo al mart (v2 di default)
+
+
+    defaults:
+      agg_time_dimension: measurement_at
+
+
+    entities:
+      - name: turbine
+        type: primary
+        expr: turbine_id                                                                            # Qui definiamo su quale base calcolare la misura quindi sono i "soggetti" della analisi.
+
+
+
+    measures:                                                                                       # Definiamo le aggregazioni base (SUM, COUNT, MIN, MAX) ovvero il "mattoncino" elementare.
+      - name: total_power_mw                                                                        # Totale di erogazione
+        description: "Somma della potenza corretta generata"
+        expr: power_corrected_mw
+        agg: sum
+
+      - name: telemetry_count                                                                       # Conteggio delle rilevazioni
+        expr: 1
+        agg: sum
+
+
+    dimensions:                                                                                     # Rappresentano gli attributi per cui  filtrare o raggruppare (es. Tempo, Modello Turbina, Location).
+      - name: measurement_at                                                                        # Lo facciamo per granularità giornaliera
+        type: time
+        type_params:
+          time_granularity: day
+
+metrics:                                                                                            # Calcolo finale che l'utente vede. Può essere semplice, un calcolo tra più misure (Ratio), o una metrica che guarda a periodi precedenti (Rolling/Cumulative).
+  # 1. Creiamo una metrica semplice che espone la measure della potenza
+  - name: total_power_mw
+    description: "Somma della potenza corretta generata"
+    label: "Potenza Totale (MW)"
+    type: simple
+    type_params:
+      measure: total_power_mw # <-- Qui "pesca" dal semantic_model
+
+  # 2. Creiamo una metrica semplice che espone il conteggio
+  - name: telemetry_count
+    description: "Conteggio delle rilevazioni"
+    label: "N° Telemetrie rilevate"
+    type: simple
+    type_params:
+      measure: telemetry_count # <-- Qui "pesca" dal semantic_model
+
+  # 3. Ora la tua metrica ratio funzionerà perfettamente
+  - name: average_power_per_turbine
+    description: "La potenza media reale corretta per ogni turbina"
+    label: "Potenza Media (MW)"
+    type: ratio                                                                                     # Per far funzionare un type ratio ci serve il numeratore e denominatore
+    type_params:
+      numerator: total_power_mw
+      denominator: telemetry_count

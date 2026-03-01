@@ -20,6 +20,8 @@ def setup_logging():
     # Configurazione di base
     log_level = os.environ.get("LOGLEVEL", "INFO").upper()
 
+    os.makedirs(os.path.join(ROOT_DIR, 'logs'), exist_ok=True)
+
     # 1. Definiamo il File Handler rotativo
     file_handler = RotatingFileHandler(
         filename=os.path.join(ROOT_DIR, 'logs', 'app.log'),

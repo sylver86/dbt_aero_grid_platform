@@ -9,9 +9,10 @@ import os
 from google.cloud.exceptions import NotFound
 
                                                                                                     # Definiamo la Root a livello di modulo per usarla ovunque
-ROOT_DIR = Path(__file__).parent.parent.parent.resolve()
+MODULE_DIR = Path(__file__).parent.parent.parent.resolve()
+ROOT_DIR = MODULE_DIR.parent
                                                                                                     # Impostiamo il logger
-sys.path.append(str(ROOT_DIR))
+sys.path.append(str(MODULE_DIR))
 from utils.logger_config import setup_logging
 setup_logging()
 
@@ -194,13 +195,13 @@ if __name__ == "__main__":
     logger = logging.getLogger(Path(__file__).stem)
 
     # Leggiamo il file di configurazione per la connessione
-    path_config_bq = ROOT_DIR / 'config' / 'ingest_config.yaml'
-
+    path_config_bq = MODULE_DIR / 'config' / 'ingest_config.yaml'
 
     # Tentiamo la connessione al Datawarehouse BigQuery di GCP
     try:
         # Inizializzazione
         conn = BigQueryIngestor(str(path_config_bq))
+
         logger.info("Inizializzazione Ingestor completata.", extra={'section': 'CONNESSIONE'})
 
         # Orchestrazione

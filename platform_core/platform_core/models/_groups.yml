@@ -1,0 +1,6 @@
+# models/_groups.yml
+groups:
+  - name: platform_core_public
+    owner:
+      name: "Eugenio Pasqua"
+      email: "eugenix86@gmail.com"

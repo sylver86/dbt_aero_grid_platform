@@ -1,12 +1,34 @@
 version: 2
 
 models:
+
+  - name: time_spine
+    description: "Calendario base per il Semantic Layer"
+
+    time_spine:
+      standard_granularity_column: date_day                                                         # Indica a dbt qual è "l'asse temporale" quindi il campo principale da usare per i calcoli quando l'utente non ne specifica uno
+
+    columns:
+      - name: date_day
+        data_type: date
+        granularity: day                                                                            # Indichiamo a dbt qual è il "livello minimo" di aggregazione supportato dalla colonna.
+
   - name: fct_turbine_telemetry
+    latest_version: 2
     description: "Tabella dei fatti certificata per la telemetria delle turbine. Contiene calcoli di performance teorica."
     config:
       contract:
         enforced: true                                                                              # <--- PER LA DEFINIZIONE DEL DATA MESH: Il Contratto è Attivo - i campi sono blindati
-    columns:
+
+    versions:
+      - v: 1
+        deprecation_date: '2026-03-22'
+      - v: 2
+        columns:
+          - name: power_corrected_mw                                                                # Questo è il campo aggiuntivo della versione 2
+            data_type: float64
+
+    columns:                                                                                        # Elenco delle colonne della versione base
       - name: telemetry_key
         data_type: string
         tests:

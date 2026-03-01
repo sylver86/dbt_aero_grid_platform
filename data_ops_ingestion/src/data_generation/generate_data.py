@@ -16,6 +16,8 @@ class TurbineDataGenerator:
 
     def __init__(self, config_path) -> None:
 
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         # Lettura del file YAML di configurazione
         with open(config_path, 'r', encoding='utf-8') as file:
             try:
@@ -220,13 +222,12 @@ class TurbineDataGenerator:
 if __name__ == "__main__":
 
     # Crea un logger con il nome del modulo corrente
-    logger = logging.getLogger(f"{Path(__file__)} - {__name__} ")                          # In questo modo istanziamo il logger in base a dove viene eseguito.
+    logger = logging.getLogger(f"{Path(__file__).stem} - {__name__} ")                              # In questo modo istanziamo il logger in base a dove viene eseguito.
 
+    module_root = Path(__file__).resolve().parent.parent.parent
+    path_config = module_root / 'config' / 'simulation_config.yaml'
 
-    folder_script = Path(__file__).parent.resolve()
-    folder_project = folder_script.parent.parent
-
-    generator_data = TurbineDataGenerator(os.path.join(folder_project,'config','simulation_config.yaml'))
+    generator_data = TurbineDataGenerator(str(path_config))
     generator_data.run()
 
     logger.info("Creazione files avvenuta con successo!",  extra={'section': 'CREAZIONE FILE DATI SORGENTI'})

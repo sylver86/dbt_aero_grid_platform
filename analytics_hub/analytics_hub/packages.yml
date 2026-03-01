@@ -1,0 +1,2 @@
+packages:
+  - local: ../../platform_core/platform_core
