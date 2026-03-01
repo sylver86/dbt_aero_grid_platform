@@ -101,6 +101,8 @@ classDiagram
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
+<br><br>
+
 ### 🏗️ High-Level Focus Architettura
 
 ```mermaid
@@ -159,7 +161,7 @@ graph TB
     style BQ_MART fill:#51cf66,color:#fff
     style MART fill:#339af0,color:#fff
 ```
-
+<br><br>
 
 ### 🥇 Medallion Architecture — Layer Detail
 
@@ -203,49 +205,7 @@ graph TB
     style FCT fill:#ffd700,color:#333
     style INT_ZSCORE fill:#9b59b6,color:#fff
 ```
-
-### 🔄 Data Flow — End-to-End Pipeline
-
-```mermaid
-flowchart LR
-    subgraph "1. GENERATE"
-        A["🎲 Synthetic Data<br/>15 turbine × 1000 readings<br/>+ 18 NULLs<br/>+ 50 Outliers<br/>+ 15 Duplicates"]
-    end
-
-    subgraph "2. INGEST"
-        B["📤 BigQuery Load<br/>WRITE_TRUNCATE<br/>Strict Schema for Telemetry<br/>Autodetect for Metadata"]
-    end
-
-    subgraph "3. STAGE"
-        C["🧹 Cleansing<br/>CAST types<br/>TRIM strings<br/>NULL sentinels → NULL<br/>Surrogate Keys (MD5)<br/>Deduplication<br/>Lookback Filter (7 days)"]
-    end
-
-    subgraph "4. INTERMEDIATE"
-        D["🔬 Enrichment<br/>Theoretical Power (Jinja UDF)<br/>Vibration Z-Score (Python)<br/>Range Pivot (Jinja loop)"]
-    end
-
-    subgraph "5. MART"
-        E["🏆 Gold Layer<br/>Incremental MERGE<br/>Partition by DAY<br/>Cluster by turbine_id<br/>Data Contract enforced"]
-    end
-
-    subgraph "6. CONSUME"
-        F["📊 BI & ML<br/>PowerBI Dashboard<br/>Anomaly Alerts<br/>Predictive Maintenance"]
-    end
-
-    A -->|CSV files| B
-    B -->|aero_grid_raw| C
-    C -->|Views| D
-    D -->|Ephemeral| E
-    E -->|Tables| F
-
-    style A fill:#ffe066,color:#333
-    style B fill:#ffa94d,color:#333
-    style C fill:#ff8787,color:#fff
-    style D fill:#da77f2,color:#fff
-    style E fill:#51cf66,color:#fff
-    style F fill:#339af0,color:#fff
-
-```
+<br><br>
 
 ### 🔀 Data Mesh — Multi-Project Topology
 
