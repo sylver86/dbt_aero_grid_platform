@@ -44,58 +44,6 @@ Il progetto affronta e risolve le sfide critiche dell'ingegneria dei dati modern
 
 ---
 
-## 🧰 Technology Stack Summary
-
-```mermaid
-mindmap
-    root((AeroGrid<br/>Platform))
-        Cloud
-            Google Cloud Platform
-            BigQuery (DWH)
-            Dataproc Serverless
-        Transformation
-            dbt Core 1.8+
-            dbt-bigquery plugin
-            dbt_utils
-            codegen
-        Languages
-            SQL (T-SQL compatible)
-            Python 3.9+
-            Jinja2 Templating
-            YAML Configuration
-        Python Libraries
-            pandas
-            numpy
-            polars
-            PyYAML
-            google-cloud-bigquery
-        Data Patterns
-            Medallion Architecture
-            Data Mesh (Multi-Project)
-            SCD Type 2 (Snapshots)
-            Incremental MERGE
-            Surrogate Keys (MD5)
-        Quality
-            Data Contracts
-            Source Freshness SLA
-            3-Tier Testing
-            Singular Physics Tests
-        Analytics
-            Semantic Layer / MetricFlow
-            Z-Score Anomaly Detection
-            Predictive Maintenance
-        BI & Exposure
-            PowerBI
-            Lineage & Impact Analysis
-            Data Steward Ownership
-        DevOps
-            Slim CI (state:modified)
-            Deferral (--defer)
-            YAML-Driven Config
-
-```
-
----
 
 ## 🏗️ Architettura e Stack Tecnologico
 L'architettura si divide in tre macro-moduli, separati fisicamente per supportare pipeline CI/CD indipendenti:
@@ -378,6 +326,60 @@ aero-grid-platform/
 └── analytics_hub/               # CONSUMER: Business Intelligence (dbt)
     ├── dependencies.yml         # Puntamento locale a platform_core
     └── models/                  
+
+```
+
+---
+
+
+## 🧰 Technology Stack Summary
+
+```mermaid
+mindmap
+    root((AeroGrid<br/>Platform))
+        Cloud
+            Google Cloud Platform
+            BigQuery (DWH)
+            Dataproc Serverless
+        Transformation
+            dbt Core 1.8+
+            dbt-bigquery plugin
+            dbt_utils
+            codegen
+        Languages
+            SQL (T-SQL compatible)
+            Python 3.9+
+            Jinja2 Templating
+            YAML Configuration
+        Python Libraries
+            pandas
+            numpy
+            polars
+            PyYAML
+            google-cloud-bigquery
+        Data Patterns
+            Medallion Architecture
+            Data Mesh (Multi-Project)
+            SCD Type 2 (Snapshots)
+            Incremental MERGE
+            Surrogate Keys (MD5)
+        Quality
+            Data Contracts
+            Source Freshness SLA
+            3-Tier Testing
+            Singular Physics Tests
+        Analytics
+            Semantic Layer / MetricFlow
+            Z-Score Anomaly Detection
+            Predictive Maintenance
+        BI & Exposure
+            PowerBI
+            Lineage & Impact Analysis
+            Data Steward Ownership
+        DevOps
+            Slim CI (state:modified)
+            Deferral (--defer)
+            YAML-Driven Config
 
 ```
 
