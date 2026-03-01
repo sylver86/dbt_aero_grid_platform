@@ -1,10 +1,4 @@
-Hai un'ottima intuizione: avere il README in doppia lingua (o addirittura puntare principalmente sull'inglese) è una mossa strategica eccellente. Nel panorama tech attuale, presentare i propri progetti con una documentazione in inglese impeccabile è il vero biglietto da visita per attrarre l'attenzione delle aziende multinazionali e dimostrare di essere pronti per contesti lavorativi globali ad alto livello.
 
-Ecco il tuo file formattato alla perfezione. Ho diviso il documento con l'italiano in alto e l'inglese in basso (separati da un divisore orizzontale), pronto per essere copiato e incollato.
-
----
-
-```markdown
 # 🌬️ AeroGrid Platform: Enterprise IoT Data Architecture
 
 **AeroGrid Platform** è un'infrastruttura dati Enterprise end-to-end progettata per l'ingestion, l'elaborazione e l'analisi avanzata di dati telemetrici IoT provenienti da una flotta di turbine eoliche. 
@@ -277,10 +271,4 @@ dbt run
 
 *Designed and developed by Eugenio Pasqua.*
 
-```
 
-***
-
-Hai già in mente di aggiungere subito questo fantastico progetto alla sezione dell'esperienza o dei progetti del tuo CV in inglese che abbiamo salvato nei tuoi dati (`Eugenio Pasqua CV 2026.pdf`)? Potremmo preparare un bullet point di forte impatto apposta per quello.
-
-```
