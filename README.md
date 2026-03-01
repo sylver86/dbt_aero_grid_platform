@@ -101,6 +101,8 @@ classDiagram
 * **Producer Domain (`platform_core`):** Progetto dbt Core dedicato al Data Engineering puro. Mappa le fonti, sanifica i dati, storicizza le anagrafiche (SCD2) e applica complessi modelli fisico-matematici.
 * **Consumer Domain (`analytics_hub`):** Progetto dbt Core per la Business Intelligence. Importa i dati dal layer core tramite le logiche di Cross-Project References tipiche del Data Mesh, ignorando gli ambienti di dev e puntando direttamente alla produzione.
 
+---
+
 <br><br>
 
 ### 🏗️ High-Level Focus Architettura
@@ -161,6 +163,9 @@ graph TB
     style BQ_MART fill:#51cf66,color:#fff
     style MART fill:#339af0,color:#fff
 ```
+
+---
+
 <br><br>
 
 ### 🥇 Medallion Architecture — Layer Detail
@@ -205,6 +210,9 @@ graph TB
     style FCT fill:#ffd700,color:#333
     style INT_ZSCORE fill:#9b59b6,color:#fff
 ```
+
+---
+
 <br><br>
 
 ### 🔀 Data Mesh — Multi-Project Topology
@@ -342,8 +350,44 @@ mindmap
             YAML-Driven Config
 
 ```
+<br><br>  
+
+### Stack Dettagliato
+
+| Layer | Technology | Role | Version |
+|:------|:-----------|:-----|:--------|
+| ☁️ **Cloud** | Google Cloud Platform | Infrastructure & IAM | — |
+| | BigQuery | Columnar DWH (Partitioned + Clustered) | — |
+| | Dataproc Serverless | Python model runtime in-DWH | — |
+| ⚙️ **Transformation** | dbt Core | Orchestration, DAG, Testing | 1.8+ |
+| | dbt-bigquery | BigQuery adapter (MERGE, partitioning) | latest |
+| | dbt_utils | `surrogate_key`, `accepted_range`, `date_spine` | 1.3.3 |
+| | codegen | Model & source scaffolding | 0.14.0 |
+| 💻 **Languages** | SQL | Core transformations & CTE chains | BigQuery SQL |
+| | Python 3.9+ | Ingestion engine & dbt-Python models | 3.9+ |
+| | Jinja2 | Macros, DRY loops, dynamic SQL | native dbt |
+| | YAML | Contracts, configs, semantic definitions | — |
+| 🐍 **Python Libs** | pandas | Z-Score anomaly detection, transforms | — |
+| | numpy | Statistical data generation (seeds) | — |
+| | polars | High-performance data processing | — |
+| | google-cloud-bigquery | BigQuery API ingestion client | — |
+| | PyYAML | YAML-driven configuration | — |
+| 🧩 **Patterns** | Medallion Architecture | Bronze → Silver → Gold layer separation | — |
+| | Data Mesh | Producer/Consumer multi-project domains | — |
+| | SCD Type 2 | dbt Snapshots for asset historization | — |
+| | Incremental MERGE | Self-healing upsert with MD5 surrogate keys | — |
+| 🛡️ **Quality** | Data Contracts | `enforced: true` + `on_schema_change: fail` | — |
+| | Source Freshness | SLA monitoring (warn 12h / error 24h) | — |
+| | 3-Tier Testing | Schema → Parametric bounds → Physics laws | — |
+| 📊 **Analytics** | Semantic Layer | MetricFlow KPI definitions in YAML | — |
+| | Z-Score Detection | Vibrational anomaly outlier isolation | — |
+| | PowerBI | Executive dashboard (Exposure mapped) | — |
+| 🚀 **DevOps** | Slim CI | `--select state:modified+` on PR only | — |
+| | Deferral | `--defer` reads parent nodes from production | — |
+| | FinOps | Partition pruning + clustering + ephemeral CTE | — |
 
 ---
+
 
 ## 🚀 Getting Started
 
