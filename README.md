@@ -444,24 +444,20 @@ dbt run
 
 ```
 
----
+<br><br>
 
 *Progettato e sviluppato da Eugenio Pasqua.*
 
 
 
-<br><br><br><br><br
+<br><br><br><br><br>
 
 ---
 
 <br><br>
 
 
-
-
----
-
----
+ 
 
 # 🇬🇧 ENGLISH VERSION
 
